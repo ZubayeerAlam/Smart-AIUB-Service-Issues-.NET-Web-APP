@@ -1,0 +1,53 @@
+@model RoomFormViewModel
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Add room" : "Edit room";
+}
+
+<div class="sc-form-wrap">
+    <a asp-action="Index" asp-route-buildingId="@Model.BuildingId" class="sc-back">&larr; Rooms</a>
+    <div class="sc-form-card">
+        <h1 class="h3 mb-4">@ViewData["Title"]</h1>
+
+        <form asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.Id)" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="mb-3" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="BuildingId" class="form-label"></label>
+                <select asp-for="BuildingId" asp-items="Model.BuildingOptions" class="form-select">
+                    <option value="">-- Select building --</option>
+                </select>
+                <span asp-validation-for="BuildingId" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-4">
+                    <label asp-for="Floor" class="form-label"></label>
+                    <input asp-for="Floor" class="form-control" min="0" max="50" />
+                    <div class="form-text">0 = ground floor</div>
+                    <span asp-validation-for="Floor" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-8">
+                    <label asp-for="RoomNumber" class="form-label"></label>
+                    <input asp-for="RoomNumber" class="form-control text-uppercase" placeholder="301" />
+                    <span asp-validation-for="RoomNumber" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="e.g. Computer Lab 2" />
+                <span asp-validation-for="Name" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" asp-route-buildingId="@Model.BuildingId" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

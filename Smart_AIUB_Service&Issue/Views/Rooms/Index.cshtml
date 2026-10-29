@@ -1,0 +1,73 @@
+@model RoomIndexViewModel
+@{
+    ViewData["Title"] = "Rooms";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Rooms</h1>
+        <p>Locations people can choose when they report an issue.</p>
+    </div>
+    <a asp-action="Create" asp-route-buildingId="@Model.BuildingId" class="btn btn-primary">+ Add room</a>
+</div>
+
+@* Same as _ListFilter, plus a building dropdown. *@
+<form method="get" class="sc-filter row g-2 align-items-end">
+    <div class="col-12 col-md-4">
+        <label asp-for="BuildingId" class="form-label">Building</label>
+        <select asp-for="BuildingId" asp-items="Model.BuildingOptions" class="form-select">
+            <option value="">All buildings</option>
+        </select>
+    </div>
+    <div class="col-12 col-md">
+        <label for="search" class="form-label">Room number or name</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="e.g. 301" />
+    </div>
+    <div class="col-7 col-md-2">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="" selected="@(string.IsNullOrEmpty(Model.Status))">All</option>
+            <option value="@StatusFilter.Active" selected="@(Model.Status == StatusFilter.Active)">Active</option>
+            <option value="@StatusFilter.Inactive" selected="@(Model.Status == StatusFilter.Inactive)">Inactive</option>
+        </select>
+    </div>
+    <div class="col-5 col-md-auto d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+        <a asp-action="Index" class="btn btn-light flex-fill">Reset</a>
+    </div>
+</form>
+
+<div class="sc-table-card">
+    @if (Model.Results.Items.Count == 0)
+    {
+        <div class="sc-empty">No rooms match your filter.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr><th>Building</th><th>Floor</th><th>Room</th><th>Name</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Results.Items)
+                    {
+                        <tr>
+                            <td>@r.BuildingName <span class="text-muted small">(@r.BuildingCode)</span></td>
+                            <td>@(r.Floor == 0 ? "Ground" : r.Floor.ToString())</td>
+                            <td class="fw-semibold">@r.RoomNumber</td>
+                            <td>@(r.Name ?? "—")</td>
+                            <td><partial name="_ActiveBadge" model="r.IsActive" /></td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@r.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <partial name="_ActiveToggle" model="new ActiveToggleModel(r.Id.ToString(), r.IsActive, r.BuildingCode + '-' + r.RoomNumber)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_Pagination" model="Model.Results" />

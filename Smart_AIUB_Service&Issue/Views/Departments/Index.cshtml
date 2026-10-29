@@ -1,0 +1,47 @@
+@model ListPageViewModel<Department>
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Departments</h1>
+        <p>Academic departments shown on student and faculty profiles.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">+ Add department</a>
+</div>
+
+<partial name="_ListFilter" model="Model" />
+
+<div class="sc-table-card">
+    @if (Model.Results.Items.Count == 0)
+    {
+        <div class="sc-empty">No departments match your filter.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr><th>Code</th><th>Name</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Results.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@d.Code</td>
+                            <td>@d.Name</td>
+                            <td><partial name="_ActiveBadge" model="d.IsActive" /></td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@d.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <partial name="_ActiveToggle" model="new ActiveToggleModel(d.Id.ToString(), d.IsActive, d.Name)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_Pagination" model="Model.Results" />

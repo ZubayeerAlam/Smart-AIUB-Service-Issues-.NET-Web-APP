@@ -1,7 +1,7 @@
 namespace Smart_AIUB_Service_Issue.Models.Entities;
 
 /// <summary>Campus building such as D-Building, C-Building or Annex 1.</summary>
-public class Building
+public class Building : IActivatable
 {
     public int Id { get; set; }
 

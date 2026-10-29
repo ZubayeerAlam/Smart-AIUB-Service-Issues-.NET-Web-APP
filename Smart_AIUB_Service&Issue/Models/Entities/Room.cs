@@ -1,7 +1,7 @@
 namespace Smart_AIUB_Service_Issue.Models.Entities;
 
 /// <summary>A specific location inside a building (floor + room number).</summary>
-public class Room
+public class Room : IActivatable
 {
     public int Id { get; set; }
 

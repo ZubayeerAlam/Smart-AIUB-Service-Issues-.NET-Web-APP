@@ -1,7 +1,7 @@
 namespace Smart_AIUB_Service_Issue.Models.Entities;
 
 /// <summary>Academic department such as CSE, EEE or BBA. Used on user profiles.</summary>
-public class Department
+public class Department : IActivatable
 {
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;

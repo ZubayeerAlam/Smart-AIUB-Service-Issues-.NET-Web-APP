@@ -1,0 +1,47 @@
+@model IPagedResult
+@{
+    // Builds a link to another page while keeping the current search/filter values.
+    string PageUrl(int page)
+    {
+        var query = Context.Request.Query
+            .Where(q => !string.Equals(q.Key, "page", StringComparison.OrdinalIgnoreCase))
+            .Select(q => new KeyValuePair<string, string?>(q.Key, q.Value.ToString()))
+            .Append(new KeyValuePair<string, string?>("page", page.ToString()));
+        return $"{Context.Request.PathBase}{Context.Request.Path}{QueryString.Create(query)}";
+    }
+
+    var first = (Model.Page - 1) * Model.PageSize + 1;
+    var last = Math.Min(Model.Page * Model.PageSize, Model.TotalCount);
+
+    // Show at most 5 page numbers around the current page.
+    var start = Math.Max(1, Model.Page - 2);
+    var end = Math.Min(Model.TotalPages, start + 4);
+    start = Math.Max(1, end - 4);
+}
+
+@if (Model.TotalCount > 0)
+{
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2 mt-3">
+        <span class="text-muted small">Showing @first–@last of @Model.TotalCount</span>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav aria-label="Pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.HasPrevious ? "" : "disabled")">
+                        <a class="page-link" href="@PageUrl(Model.Page - 1)" aria-label="Previous">&laquo;</a>
+                    </li>
+                    @for (var p = start; p <= end; p++)
+                    {
+                        <li class="page-item @(p == Model.Page ? "active" : "")">
+                            <a class="page-link" href="@PageUrl(p)">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.HasNext ? "" : "disabled")">
+                        <a class="page-link" href="@PageUrl(Model.Page + 1)" aria-label="Next">&raquo;</a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
+}

@@ -34,7 +34,25 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        @* Role-specific links (Report Issue, Review Queue, Assets, ...) are added in later milestones. *@
+                        @if (User.IsInRole(Roles.Admin))
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Manage</a>
+                                <ul class="dropdown-menu sc-dropdown">
+                                    <li><a class="dropdown-item" asp-controller="Users" asp-action="Index">Users</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><h6 class="dropdown-header">Campus</h6></li>
+                                    <li><a class="dropdown-item" asp-controller="Buildings" asp-action="Index">Buildings</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Rooms" asp-action="Index">Rooms</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><h6 class="dropdown-header">Lookups</h6></li>
+                                    <li><a class="dropdown-item" asp-controller="Departments" asp-action="Index">Departments</a></li>
+                                    <li><a class="dropdown-item" asp-controller="IssueCategories" asp-action="Index">Issue categories</a></li>
+                                    <li><a class="dropdown-item" asp-controller="SupportTeams" asp-action="Index">Support teams</a></li>
+                                </ul>
+                            </li>
+                        }
+                        @* Report Issue, Review Queue, Assets, ... are added in later milestones. *@
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
@@ -50,6 +68,7 @@
         else
         {
             <div class="container sc-page">
+                <partial name="_Alerts" />
                 @RenderBody()
             </div>
         }

@@ -1,0 +1,67 @@
+@model EditUserViewModel
+@{
+    ViewData["Title"] = "Edit user";
+    var isReporter = Model.Role is Roles.Student or Roles.Faculty;
+    var isStaff = Model.Role == Roles.SupportStaff;
+}
+
+<div class="sc-form-wrap">
+    <a asp-action="Index" class="sc-back">&larr; Users</a>
+    <div class="sc-form-card">
+        <h1 class="h3 mb-1">Edit user</h1>
+        <p class="text-muted mb-4">
+            @Model.Email · <span class="sc-badge sc-badge-role">@Model.Role</span>
+        </p>
+
+        <form asp-action="Edit" asp-route-id="@Model.Id" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="mb-3" role="alert"></div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-7">
+                    <label asp-for="FullName" class="form-label"></label>
+                    <input asp-for="FullName" class="form-control" />
+                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-5">
+                    <label asp-for="UniversityId" class="form-label"></label>
+                    <input asp-for="UniversityId" class="form-control" />
+                    <span asp-validation-for="UniversityId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            @if (isReporter)
+            {
+                <div class="mb-4">
+                    <label asp-for="DepartmentId" class="form-label"></label>
+                    <select asp-for="DepartmentId" asp-items="Model.DepartmentOptions" class="form-select">
+                        <option value="">-- Select department --</option>
+                    </select>
+                    <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                </div>
+            }
+            else if (isStaff)
+            {
+                <div class="mb-4">
+                    <label asp-for="SupportTeamId" class="form-label"></label>
+                    <select asp-for="SupportTeamId" asp-items="Model.TeamOptions" class="form-select">
+                        <option value="">-- Select team --</option>
+                    </select>
+                    <span asp-validation-for="SupportTeamId" class="text-danger small"></span>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted small mb-4">Admins don't belong to a department or support team.</p>
+            }
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

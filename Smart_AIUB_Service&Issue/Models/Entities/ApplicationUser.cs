@@ -6,7 +6,7 @@ namespace Smart_AIUB_Service_Issue.Models.Entities;
 /// Login account plus profile. Identity already provides Id, Email, UserName,
 /// PasswordHash, lockout fields, etc. We only add campus-specific fields.
 /// </summary>
-public class ApplicationUser : IdentityUser
+public class ApplicationUser : IdentityUser, IActivatable
 {
     public string FullName { get; set; } = string.Empty;
 

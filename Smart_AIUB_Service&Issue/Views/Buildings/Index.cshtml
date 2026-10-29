@@ -1,0 +1,50 @@
+@model ListPageViewModel<BuildingListItem>
+@{
+    ViewData["Title"] = "Buildings";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Buildings</h1>
+        <p>Campus buildings. Open a building's rooms to manage floors and room numbers.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">+ Add building</a>
+</div>
+
+<partial name="_ListFilter" model="Model" />
+
+<div class="sc-table-card">
+    @if (Model.Results.Items.Count == 0)
+    {
+        <div class="sc-empty">No buildings match your filter.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr><th>Code</th><th>Name</th><th>Rooms</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var b in Model.Results.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@b.Code</td>
+                            <td>@b.Name</td>
+                            <td>
+                                <a asp-controller="Rooms" asp-action="Index" asp-route-buildingId="@b.Id">@b.RoomCount rooms</a>
+                            </td>
+                            <td><partial name="_ActiveBadge" model="b.IsActive" /></td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@b.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <partial name="_ActiveToggle" model="new ActiveToggleModel(b.Id.ToString(), b.IsActive, b.Name)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_Pagination" model="Model.Results" />

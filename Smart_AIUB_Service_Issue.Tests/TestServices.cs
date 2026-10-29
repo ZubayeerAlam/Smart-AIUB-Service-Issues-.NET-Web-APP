@@ -36,10 +36,12 @@ public sealed class TestServices : IAsyncDisposable
 
         var services = new ServiceCollection();
         services.AddLogging();
+        services.AddDataProtection(); // needed by the password-reset token provider
         services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connection));
         services.AddIdentityCore<ApplicationUser>(IdentityConfig.Configure)
             .AddRoles<IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
         configure?.Invoke(services);
 
         var testServices = new TestServices(connection, services.BuildServiceProvider());

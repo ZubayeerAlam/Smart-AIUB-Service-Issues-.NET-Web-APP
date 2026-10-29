@@ -1,0 +1,23 @@
+@model IListFilter
+@*
+    Search + status filter used by the simple admin lists.
+    It is a GET form, so the filter is part of the URL (bookmarkable, works with paging).
+*@
+<form method="get" class="sc-filter row g-2 align-items-end">
+    <div class="col-12 col-md">
+        <label for="search" class="form-label">Search</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Type to search…" />
+    </div>
+    <div class="col-7 col-md-3">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="" selected="@(string.IsNullOrEmpty(Model.Status))">All</option>
+            <option value="@StatusFilter.Active" selected="@(Model.Status == StatusFilter.Active)">Active</option>
+            <option value="@StatusFilter.Inactive" selected="@(Model.Status == StatusFilter.Inactive)">Inactive</option>
+        </select>
+    </div>
+    <div class="col-5 col-md-auto d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+        <a href="@Context.Request.Path" class="btn btn-light flex-fill">Reset</a>
+    </div>
+</form>

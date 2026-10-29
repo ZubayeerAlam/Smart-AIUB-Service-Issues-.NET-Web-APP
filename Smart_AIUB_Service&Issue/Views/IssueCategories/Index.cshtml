@@ -1,0 +1,48 @@
+@model ListPageViewModel<IssueCategoryListItem>
+@{
+    ViewData["Title"] = "Issue categories";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Issue categories</h1>
+        <p>Types of problems people can report. The default team is pre-selected when reviewing an issue.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">+ Add category</a>
+</div>
+
+<partial name="_ListFilter" model="Model" />
+
+<div class="sc-table-card">
+    @if (Model.Results.Items.Count == 0)
+    {
+        <div class="sc-empty">No categories match your filter.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr><th>Name</th><th>Description</th><th>Default team</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.Results.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@c.Name</td>
+                            <td class="text-muted">@(c.Description ?? "—")</td>
+                            <td>@(c.DefaultTeamName ?? "—")</td>
+                            <td><partial name="_ActiveBadge" model="c.IsActive" /></td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@c.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <partial name="_ActiveToggle" model="new ActiveToggleModel(c.Id.ToString(), c.IsActive, c.Name)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_Pagination" model="Model.Results" />

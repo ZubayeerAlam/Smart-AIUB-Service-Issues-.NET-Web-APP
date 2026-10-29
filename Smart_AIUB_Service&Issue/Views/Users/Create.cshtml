@@ -1,0 +1,86 @@
+@model CreateUserViewModel
+@{
+    ViewData["Title"] = "Add staff / admin";
+}
+
+<div class="sc-form-wrap">
+    <a asp-action="Index" class="sc-back">&larr; Users</a>
+    <div class="sc-form-card">
+        <h1 class="h3 mb-1">Add staff / admin</h1>
+        <p class="text-muted mb-4">The user logs in with this email and the temporary password you set.</p>
+
+        <form asp-action="Create" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="mb-3" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-7">
+                    <label asp-for="Email" class="form-label"></label>
+                    <input asp-for="Email" class="form-control" autocomplete="off" />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-5">
+                    <label asp-for="UniversityId" class="form-label"></label>
+                    <input asp-for="UniversityId" class="form-control" />
+                    <span asp-validation-for="UniversityId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-5">
+                    <label asp-for="Role" class="form-label"></label>
+                    <select asp-for="Role" asp-items="Model.RoleOptions" class="form-select" data-team-toggle>
+                        <option value="">-- Select --</option>
+                    </select>
+                    <span asp-validation-for="Role" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-7" id="teamField">
+                    <label asp-for="SupportTeamId" class="form-label"></label>
+                    <select asp-for="SupportTeamId" asp-items="Model.TeamOptions" class="form-select">
+                        <option value="">-- Select team --</option>
+                    </select>
+                    <div class="form-text">Required for Support Staff.</div>
+                    <span asp-validation-for="SupportTeamId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-1">
+                <div class="col-sm-6">
+                    <label asp-for="Password" class="form-label"></label>
+                    <input asp-for="Password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="ConfirmPassword" class="form-label"></label>
+                    <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                </div>
+            </div>
+            <p class="form-text mb-4">At least 8 characters, with an uppercase letter, a lowercase letter and a digit.</p>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Create account</button>
+                <a asp-action="Index" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Show the team dropdown only for Support Staff (the server checks this too).
+        (function () {
+            const role = document.querySelector("[data-team-toggle]");
+            const team = document.getElementById("teamField");
+            const update = () => team.classList.toggle("d-none", role.value !== "SupportStaff");
+            role.addEventListener("change", update);
+            update();
+        })();
+    </script>
+}

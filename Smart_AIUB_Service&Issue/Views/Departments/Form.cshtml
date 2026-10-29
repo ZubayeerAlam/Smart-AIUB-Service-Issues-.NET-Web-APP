@@ -1,0 +1,38 @@
+@model DepartmentFormViewModel
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Add department" : "Edit department";
+}
+
+<div class="sc-form-wrap">
+    <a asp-action="Index" class="sc-back">&larr; Departments</a>
+    <div class="sc-form-card">
+        <h1 class="h3 mb-4">@ViewData["Title"]</h1>
+
+        <form asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.Id)" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="mb-3" role="alert"></div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-4">
+                    <label asp-for="Code" class="form-label"></label>
+                    <input asp-for="Code" class="form-control text-uppercase" placeholder="CSE" />
+                    <span asp-validation-for="Code" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-8">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="Computer Science & Engineering" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,91 @@
+@model UserIndexViewModel
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Users</h1>
+        <p>Students and faculty register themselves. Create support staff and admin accounts here.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">+ Add staff / admin</a>
+</div>
+
+@* Same as _ListFilter, plus a role dropdown. *@
+<form method="get" class="sc-filter row g-2 align-items-end">
+    <div class="col-12 col-md">
+        <label for="search" class="form-label">Search</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Name, email or ID" />
+    </div>
+    <div class="col-6 col-md-2">
+        <label for="role" class="form-label">Role</label>
+        <select id="role" name="role" class="form-select">
+            <option value="">All roles</option>
+            @foreach (var r in Roles.All)
+            {
+                <option value="@r" selected="@(Model.Role == r)">@r</option>
+            }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="" selected="@(string.IsNullOrEmpty(Model.Status))">All</option>
+            <option value="@StatusFilter.Active" selected="@(Model.Status == StatusFilter.Active)">Active</option>
+            <option value="@StatusFilter.Inactive" selected="@(Model.Status == StatusFilter.Inactive)">Inactive</option>
+        </select>
+    </div>
+    <div class="col-12 col-md-auto d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+        <a asp-action="Index" class="btn btn-light flex-fill">Reset</a>
+    </div>
+</form>
+
+<div class="sc-table-card">
+    @if (Model.Results.Items.Count == 0)
+    {
+        <div class="sc-empty">No users match your filter.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr><th>User</th><th>ID</th><th>Role</th><th>Department / Team</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model.Results.Items)
+                    {
+                        var isMe = u.Id == Model.CurrentUserId;
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@u.FullName @if (isMe) { <span class="sc-badge sc-badge-info ms-1">You</span> }</div>
+                                <div class="text-muted small">@u.Email</div>
+                            </td>
+                            <td>@(u.UniversityId ?? "—")</td>
+                            <td><span class="sc-badge sc-badge-role">@(u.Role ?? "—")</span></td>
+                            <td>@(u.DepartmentCode ?? u.TeamName ?? "—")</td>
+                            <td>
+                                <partial name="_ActiveBadge" model="u.IsActive" />
+                                @if (u.IsLockedOut)
+                                {
+                                    <span class="sc-badge sc-badge-warning ms-1" title="Too many wrong passwords. Reset the password to unlock.">Locked</span>
+                                }
+                            </td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@u.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a asp-action="ResetPassword" asp-route-id="@u.Id" class="btn btn-sm btn-outline-secondary">Reset password</a>
+                                @if (!isMe)
+                                {
+                                    <partial name="_ActiveToggle" model="new ActiveToggleModel(u.Id, u.IsActive, u.FullName)" />
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_Pagination" model="Model.Results" />

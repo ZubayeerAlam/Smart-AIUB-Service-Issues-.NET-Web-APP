@@ -54,7 +54,14 @@ builder.Services.AddAuthorizationBuilder()
     // Secure by default: every page needs a logged-in user unless it is marked [AllowAnonymous].
     .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build());
 
+// Services (business logic). Scoped = one instance per web request, sharing its DbContext.
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IBuildingService, BuildingService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<ISupportTeamService, SupportTeamService>();
+builder.Services.AddScoped<IIssueCategoryService, IssueCategoryService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 builder.Services.AddControllersWithViews(options =>
 {

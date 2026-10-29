@@ -1,0 +1,15 @@
+@model ActiveToggleModel
+@*
+    Activate/Deactivate button. It is a POST form (never a link), so it is protected by the
+    anti-forgery token and can't be triggered by someone just sending a URL.
+    The confirm text sits in a data- attribute; site.js shows it before submitting.
+*@
+@{
+    var action = Model.IsActive ? "Deactivate" : "Activate";
+}
+<form asp-action="SetActive" asp-route-id="@Model.Id" method="post" class="d-inline"
+      data-confirm="@action '@Model.ItemName'?">
+    <input type="hidden" name="isActive" value="@(Model.IsActive ? "false" : "true")" />
+    <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+    <button type="submit" class="btn btn-sm @(Model.IsActive ? "btn-outline-danger" : "btn-outline-success")">@action</button>
+</form>

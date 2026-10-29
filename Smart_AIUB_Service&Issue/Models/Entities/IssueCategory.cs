@@ -1,7 +1,7 @@
 namespace Smart_AIUB_Service_Issue.Models.Entities;
 
 /// <summary>Type of problem, e.g. Projector, Wi-Fi/Network, Electrical.</summary>
-public class IssueCategory
+public class IssueCategory : IActivatable
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

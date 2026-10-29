@@ -1,7 +1,7 @@
 namespace Smart_AIUB_Service_Issue.Models.Entities;
 
 /// <summary>Group of support staff, e.g. IT Support, Electrical, Furniture.</summary>
-public class SupportTeam
+public class SupportTeam : IActivatable
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

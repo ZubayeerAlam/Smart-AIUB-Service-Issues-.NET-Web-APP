@@ -9,9 +9,9 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | Planning | ✅ |
 | M0 — Repo hygiene & setup | ✅ |
 | M1 — Database design & first migration | ✅ (seeding moved to M2) |
-| M2 — Auth, roles & seed data | 🔄 (only your Admin login check left) |
-| M3 — Master data & user management | ⬜ **← NEXT** |
-| M4 — Issue reporting | ⬜ |
+| M2 — Auth, roles & seed data | ✅ (committed) |
+| M3 — Master data & user management | 🔄 (only your Admin browser check left) |
+| M4 — Issue reporting | ⬜ **← NEXT** |
 | M5 — Review, workflow, history, comments | ⬜ |
 | M6 — Assets & maintenance | ⬜ |
 | M7 — Dashboards | ⬜ |
@@ -42,9 +42,9 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 - [x] `InitialCreate` migration applied — 19 tables in `AIUB_Service&IssuesDb` (SQL Server 2025 Express)
 - [x] Build: 0 warnings, 0 errors · Tests: 1/1 passed
 - [x] Committed: `5f71f41 Add EF Core data model and initial database migration`
-- [ ] Push to GitHub (commit is local only)
+- [ ] Push to GitHub
 
-## 🔄 M2 — Auth, roles & seed data
+## ✅ M2 — Auth, roles & seed data
 **Decisions:** 4 roles kept (Student, Faculty, SupportStaff, Admin). Deactivated = `IsActive = false`. A logged-in deactivated user is signed out within ~3 minutes (security stamp check).
 
 - [x] Identity registered in `Program.cs`. Rules in `Authorization/IdentityConfig.cs`: password 8+ chars with upper, lower and digit; lockout after 5 tries for 15 min; unique email
@@ -59,15 +59,22 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 - [x] Tests: 9/9 passed (Admin/SupportStaff/blank role rejected, Student/Faculty created, inactive department, duplicate ID, weak password)
 - [x] Browser check: tampered "Admin" role rejected · Student registered and logged in · deactivated student blocked
 - [ ] **You:** log in as Admin (`admin@smartcampus.test`; password in Visual Studio → right-click project → Manage User Secrets)
-- [ ] Commit M2
+- [x] Commit M2 (`ea1b406`)
 
-## ⬜ M3 — Master data & user management ← NEXT
-- [ ] CRUD + deactivate: Departments, Buildings, Rooms, Categories, Support Teams
-- [ ] User management: create staff/admin, assign team, deactivate, reset password
-- [ ] Reusable pagination (`PagedResult<T>` + `_Pagination` partial)
-- [ ] Tests: unique constraints, non-admin gets 403
+## 🔄 M3 — Master data & user management
+- [x] Shared helpers in `Common/`: `PagedResult<T>` + `ToPagedResultAsync`, `ServiceResult`, `WhereStatus` / `SetActiveAsync` (via `IActivatable`)
+- [x] Add / edit / deactivate / search / page: **Departments, Buildings, Rooms, Issue categories, Support teams** (one service + controller + `Index` and `Form` views each)
+- [x] Rules: unique codes/names, room number unique per building, no new rooms in inactive buildings, default team must be active, inactive items kept on old records but hidden from dropdowns
+- [x] User management: list (search, role, status, "Locked" badge), create Support Staff / Admin, edit name / ID / department / team, deactivate (cannot deactivate yourself; signs user out within ~3 min), reset password (also unlocks)
+- [x] `AdminControllerBase` with `[Authorize(Policy = AdminOnly)]`: every admin controller inherits it
+- [x] Shared partials: `_Pagination`, `_ListFilter`, `_ActiveBadge`, `_ActiveToggle` (POST + confirm), `_Alerts`
+- [x] Navbar **Manage** menu (Admin only)
+- [x] Tests: **42/42 passed** (33 new: duplicates, paging, status filter, rooms per building, staff needs team, self-deactivate blocked, security stamp changes, reset unlocks, every admin controller requires AdminOnly)
+- [x] Browser check: logged out → login page · Student → "Access denied" on `/Departments`
+- [ ] **You:** log in as Admin and click through Manage → each page
+- [ ] Commit M3
 
-## ⬜ M4 — Issue reporting
+## ⬜ M4 — Issue reporting ← NEXT
 - [ ] Report form: Category, Building → Room (cascading dropdown), Title, Description
 - [ ] My Issues list, public open-issue list, issue detail page
 - [ ] Edit/cancel only while Submitted
@@ -108,3 +115,4 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | 2026-10-29 | Planning done; M0 and M1 completed; Plan folder created |
 | 2026-10-29 | M2 implemented: Identity, roles, seeder, register/login/logout, tests (9/9) |
 | 2026-10-29 | UI redesign: navy/blue theme, bold brand, full-screen hero, split-screen login/register, phone layout |
+| 2026-10-29 | M3 implemented: master data CRUD, user management, pagination, tests (42/42) |
