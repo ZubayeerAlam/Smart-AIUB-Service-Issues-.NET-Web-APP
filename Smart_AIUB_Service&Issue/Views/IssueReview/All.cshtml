@@ -1,0 +1,51 @@
+@model IssueListViewModel
+@{
+    ViewData["Title"] = "All issues";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>All issues</h1>
+        <p>Every reported issue, newest first.</p>
+    </div>
+    <a asp-action="Index" class="btn btn-primary">Review queue</a>
+</div>
+
+<form method="get" class="sc-filter row g-2 align-items-end">
+    <div class="col-12 col-lg">
+        <label for="search" class="form-label">Search</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Title, room, building or ticket no." />
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="">All</option>
+            @foreach (var s in Enum.GetValues<IssueStatus>())
+            {
+                <option value="@s" selected="@(Model.Status == s)">@s.DisplayName()</option>
+            }
+        </select>
+    </div>
+    <div class="col-6 col-md-4 col-lg-2">
+        <label for="priority" class="form-label">Priority</label>
+        <select id="priority" name="priority" class="form-select">
+            <option value="">All</option>
+            @foreach (var p in Enum.GetValues<IssuePriority>())
+            {
+                <option value="@p" selected="@(Model.Priority == p)">@p</option>
+            }
+        </select>
+    </div>
+    <div class="col-12 col-md-4 col-lg-2">
+        <label asp-for="TeamId" class="form-label">Team</label>
+        <select asp-for="TeamId" asp-items="Model.TeamOptions" class="form-select">
+            <option value="">All teams</option>
+        </select>
+    </div>
+    <div class="col-12 col-lg-auto d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+        <a asp-action="All" class="btn btn-light flex-fill">Reset</a>
+    </div>
+</form>
+
+<partial name="_IssueTable" model="Model.Results" />

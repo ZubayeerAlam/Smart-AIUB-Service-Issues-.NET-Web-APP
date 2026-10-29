@@ -11,9 +11,9 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | M1 — Database design & first migration | ✅ (seeding moved to M2) |
 | M2 — Auth, roles & seed data | ✅ (committed) |
 | M3 — Master data & user management | ✅ (committed `2418627`; your Admin browser check still open) |
-| M4 — Issue reporting | ✅ (not committed yet) |
-| M5 — Review, workflow, history, comments | ⬜ **← NEXT** |
-| M6 — Assets & maintenance | ⬜ |
+| M4 — Issue reporting | ✅ (committed `ab06373`) |
+| M5 — Review, workflow, history, comments | ✅ (not committed yet; your Admin/Staff browser check open) |
+| M6 — Assets & maintenance | ⬜ **← NEXT** |
 | M7 — Dashboards | ⬜ |
 | M8 — Search, filters & reports | ⬜ |
 | M9 — Hardening & docs | ⬜ |
@@ -87,17 +87,22 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 - [x] Navbar: Report issue · My issues · Open issues; collapses to ☰ below 992px; filter buttons wrap on phones
 - [x] Tests: **60/60 passed** (18 new: room/building mismatch, inactive room/category, edit refused after review, other user can't edit, cancel rules, IDOR via `IAuthorizationService`, staff only see their team's issues)
 - [x] Browser check: report with cascading rooms · edit pre-filled · second student gets **404** on Details / Edit / forged Cancel POST · issue unchanged in DB · phone layout
-- [ ] Commit M4
+- [x] Commit M4 (`ab06373`)
 
-## ⬜ M5 — Review, workflow, history, comments ← NEXT
-- [ ] `IssueWorkflowService` with every transition from plan section 5
-- [ ] Admin review queue: priority, assign team/staff, reject, reassign
-- [ ] Staff: take, start, hold, resolve (resolution note required)
-- [ ] Reporter: close or reopen (within 7 days)
-- [ ] Status history timeline, comments with internal flag
-- [ ] Tests: allowed and forbidden transitions, reopen window, internal comments hidden
+## ✅ M5 — Review, workflow, history, comments
+- [x] `IssueWorkflowService`: assign / reassign, reject, take, start, hold, resume, resolve, cancel, close, reopen. Each checks `IssuePermissions`, validates input and writes one history row in the same save; concurrency conflicts (RowVersion) give a friendly "reload" message
+- [x] Rules: priority + active team required; technician must be active staff of that team; reject/hold/reopen need a reason; resolve needs a note (10+ chars); reassign possible while Assigned / In progress / On hold
+- [x] Reporter: close (confirm fix) or reopen within **7 days** (`Issues:ReopenWindowDays` in appsettings) → back to the same team and technician, `ReopenCount` +1
+- [x] Admin: **Review queue** (oldest first) and **All issues** (status, priority, team, search) under the navbar **Issues** menu; Review/Reassign panel on the issue page with team-filtered technician list
+- [x] Staff: **Team queue** with tabs Assigned to me / Unassigned / Whole team; Work panel (Take, Start, Hold, Resume, Resolve)
+- [x] Comments with **internal notes** (staff/admin only; filtered out in the database query for reporters; yellow "Internal note" style); comments close when the issue is finished
+- [x] Issue page shows only the actions the current user may do right now; priority badges; "Reopened n×" badge
+- [x] Tests: **88/88 passed** (28 new: full lifecycle history, every forbidden transition, reopen window, internal notes hidden, team queue scopes)
+- [x] Browser check (reporter): comment posted · no admin/staff panels · forged internal note refused
+- [ ] **You:** as Admin: Issues → Review queue → open ISS-000001 → assign. Then create a Support Staff user in that team, log in as them and use Team queue → Take → Start → Resolve
+- [ ] Commit M5
 
-## ⬜ M6 — Assets & maintenance
+## ⬜ M6 — Assets & maintenance ← NEXT
 - [ ] Asset types CRUD, asset CRUD (Admin)
 - [ ] Link issue → asset (same room), maintenance records, asset history page
 - [ ] Tests: unique tag, same-room rule
@@ -125,3 +130,4 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | 2026-10-29 | UI redesign: navy/blue theme, bold brand, full-screen hero, split-screen login/register, phone layout |
 | 2026-10-29 | M3 implemented: master data CRUD, user management, pagination, tests (42/42) |
 | 2026-10-29 | M4 implemented: issue reporting, lists, details, edit/cancel, resource-based authorization, tests (60/60) |
+| 2026-10-29 | M5 implemented: full workflow, review queue, team queue, comments with internal notes, tests (88/88) |

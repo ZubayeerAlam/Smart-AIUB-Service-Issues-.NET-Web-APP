@@ -157,8 +157,65 @@ public class IssuesController : Controller
         return View("Form", model);
     }
 
+    // ---------- Support staff: team queue ----------
+
+    /// <summary>Issues of the logged-in technician's team.</summary>
+    [Authorize(Roles = Roles.SupportStaff)]
+    public async Task<IActionResult> Team(string? scope, string? search, IssueStatus? status, IssuePriority? priority, int page = 1)
+    {
+        var filter = new IssueListFilter { Search = search, Status = status, Priority = priority };
+        var model = new IssueListViewModel
+        {
+            Scope = scope,
+            Search = search,
+            Status = status,
+            Priority = priority,
+            Results = await _issues.GetTeamIssuesAsync(await _actors.GetAsync(User), scope, filter, page)
+        };
+        return View(model);
+    }
+
+    // ---------- Workflow actions ----------
+    // Each one: 404 if the user may not even see the issue, then the workflow service
+    // decides whether this transition is allowed for this user right now.
+
     [HttpPost]
-    public async Task<IActionResult> Cancel(int id, CancelIssueViewModel model)
+    public Task<IActionResult> Cancel(int id, IssueNoteViewModel model) =>
+        RunAsync(id, actor => _workflow.CancelAsync(id, model.Note, actor), "Issue cancelled.");
+
+    [HttpPost]
+    public Task<IActionResult> Take(int id) =>
+        RunAsync(id, actor => _workflow.TakeAsync(id, actor), "You took this issue. Press \"Start work\" when you begin.");
+
+    [HttpPost]
+    public Task<IActionResult> Start(int id) =>
+        RunAsync(id, actor => _workflow.StartAsync(id, actor), "Work started.");
+
+    [HttpPost]
+    public Task<IActionResult> Hold(int id, IssueNoteViewModel model) =>
+        RunAsync(id, actor => _workflow.HoldAsync(id, model.Note, actor), "Issue put on hold.");
+
+    [HttpPost]
+    public Task<IActionResult> Resume(int id) =>
+        RunAsync(id, actor => _workflow.ResumeAsync(id, actor), "Work resumed.");
+
+    [HttpPost]
+    public Task<IActionResult> Resolve(int id, IssueNoteViewModel model) =>
+        RunAsync(id, actor => _workflow.ResolveAsync(id, model.Note, actor), "Issue marked as resolved. The reporter can now confirm the fix.");
+
+    [HttpPost]
+    public Task<IActionResult> Close(int id) =>
+        RunAsync(id, actor => _workflow.CloseAsync(id, actor), "Thanks for confirming! The issue is closed.");
+
+    [HttpPost]
+    public Task<IActionResult> Reopen(int id, IssueNoteViewModel model) =>
+        RunAsync(id, actor => _workflow.ReopenAsync(id, model.Note, actor), "Issue reopened and sent back to the support team.");
+
+    [HttpPost]
+    public Task<IActionResult> Comment(int id, AddCommentViewModel model) =>
+        RunAsync(id, actor => _issues.AddCommentAsync(id, model, actor), model.IsInternal ? "Internal note added." : "Comment added.");
+
+    private async Task<IActionResult> RunAsync(int id, Func<IssueActor, Task<ServiceResult>> action, string successMessage)
     {
         var issue = await _issues.FindAsync(id);
         if (issue is null || !await IsAllowedAsync(issue, IssueOperations.View))
@@ -166,13 +223,10 @@ public class IssuesController : Controller
             return NotFound();
         }
 
-        var result = ModelState.IsValid
-            ? await _workflow.CancelAsync(id, model.Reason, await _actors.GetAsync(User))
-            : ServiceResult.Fail("The reason is too long (max 500 characters).");
-
+        var result = await action(await _actors.GetAsync(User));
         if (result.Succeeded)
         {
-            TempData["Success"] = "Issue cancelled.";
+            TempData["Success"] = successMessage;
         }
         else
         {

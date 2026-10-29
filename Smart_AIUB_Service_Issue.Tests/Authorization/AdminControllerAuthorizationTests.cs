@@ -19,7 +19,8 @@ public class AdminControllerAuthorizationTests
         typeof(BuildingsController),
         typeof(RoomsController),
         typeof(IssueCategoriesController),
-        typeof(SupportTeamsController)
+        typeof(SupportTeamsController),
+        typeof(IssueReviewController)
     ];
 
     public static TheoryData<Type> AdminControllerTypes()

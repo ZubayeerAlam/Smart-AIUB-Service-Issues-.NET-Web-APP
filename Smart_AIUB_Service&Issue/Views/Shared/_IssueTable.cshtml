@@ -3,10 +3,11 @@
     Shared issue list. Phones get stacked cards; tablets and up get a table.
     ViewData["EmptyText"] sets the "nothing here" message.
     ViewData["LinkToDetails"] = false shows rows without links (public list).
+    Staff/admin lists (items with ReporterName) also show priority, reporter and assignee.
 *@
 @{
     var linkToDetails = ViewData["LinkToDetails"] as bool? ?? true;
-    var showReporter = Model.Items.Any(i => i.ReporterName is not null);
+    var staffView = Model.Items.Any(i => i.ReporterName is not null);
 }
 
 <div class="sc-table-card">
@@ -23,7 +24,13 @@
                 <div class="sc-issue-card">
                     <div class="d-flex justify-content-between gap-2">
                         <div class="small text-muted">@i.TicketNumber · @i.CategoryName</div>
-                        <partial name="_StatusBadge" model="i.Status" />
+                        <div class="d-flex gap-1">
+                            @if (staffView && i.Priority is not null)
+                            {
+                                <span class="sc-badge @i.Priority.Value.BadgeClass()">@i.Priority</span>
+                            }
+                            <partial name="_StatusBadge" model="i.Status" />
+                        </div>
                     </div>
                     <div class="fw-semibold my-1">
                         @if (linkToDetails)
@@ -36,6 +43,10 @@
                         }
                     </div>
                     <div class="small text-muted">@i.BuildingName · Room @i.RoomNumber · @i.CreatedAt.ToDisplayDate()</div>
+                    @if (staffView)
+                    {
+                        <div class="small text-muted">@i.ReporterName → @(i.AssignedTo ?? "not assigned")</div>
+                    }
                 </div>
             }
         </div>
@@ -48,7 +59,12 @@
                         <th>Ticket</th>
                         <th>Title</th>
                         <th>Location</th>
-                        @if (showReporter) { <th>Reported by</th> }
+                        @if (staffView)
+                        {
+                            <th>Reported by</th>
+                            <th>Assigned to</th>
+                            <th>Priority</th>
+                        }
                         <th>Status</th>
                         <th>Reported</th>
                     </tr>
@@ -70,7 +86,21 @@
                                 <div class="small text-muted">@i.CategoryName</div>
                             </td>
                             <td>@i.BuildingName <span class="text-muted small">· Room @i.RoomNumber</span></td>
-                            @if (showReporter) { <td>@i.ReporterName</td> }
+                            @if (staffView)
+                            {
+                                <td>@i.ReporterName</td>
+                                <td class="small">@(i.AssignedTo ?? "—")</td>
+                                <td>
+                                    @if (i.Priority is not null)
+                                    {
+                                        <span class="sc-badge @i.Priority.Value.BadgeClass()">@i.Priority</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+                            }
                             <td><partial name="_StatusBadge" model="i.Status" /></td>
                             <td class="text-nowrap small text-muted">@i.CreatedAt.ToDisplayDate()</td>
                         </tr>

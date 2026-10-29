@@ -679,3 +679,56 @@ body {
   background: #fff;
   border: 3px solid var(--sc-blue);
 }
+
+/* ---------- Workflow (M5) ---------- */
+
+/* Priority colours */
+.sc-pr-low      { background: #eef1f6; color: #475569; }
+.sc-pr-medium   { background: #e0f2fe; color: #0369a1; }
+.sc-pr-high     { background: #fff4e0; color: #b45309; }
+.sc-pr-critical { background: #fdecec; color: #b42318; }
+
+/* Panels with buttons stand out a little */
+.sc-panel-action {
+  border-color: #c7d7f8;
+  box-shadow: 0 8px 24px rgba(29, 111, 232, 0.07);
+}
+
+.sc-comment {
+  border-top: 1px solid #eef1f6;
+  padding: 0.85rem 0;
+}
+
+.sc-comment:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* Internal notes: yellow tint so staff never mistake them for public replies */
+.sc-comment-internal {
+  background: #fffbeb;
+  border: 1px dashed #f5d48a;
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin: 0.5rem 0;
+}
+
+.sc-tabs {
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.sc-tabs .nav-link {
+  border-radius: 2rem;
+  padding: 0.4rem 1rem;
+  color: var(--sc-muted);
+  font-weight: 600;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+}
+
+.sc-tabs .nav-link.active {
+  background: var(--sc-blue);
+  border-color: var(--sc-blue);
+  color: #fff;
+}

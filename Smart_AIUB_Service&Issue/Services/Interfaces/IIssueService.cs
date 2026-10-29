@@ -8,6 +8,7 @@ namespace Smart_AIUB_Service_Issue.Services.Interfaces;
 
 public interface IIssueService
 {
+    // Report form
     /// <summary>Fills the Category/Building/Room dropdowns of the report form.</summary>
     Task FillFormOptionsAsync(IssueFormViewModel model);
 
@@ -25,12 +26,27 @@ public interface IIssueService
     /// <summary>Updates an issue. Only allowed while Submitted, by its reporter or an admin.</summary>
     Task<ServiceResult> UpdateAsync(IssueFormViewModel model, IssueActor actor);
 
+    // Lists
     /// <summary>Issues reported by <paramref name="userId"/>.</summary>
     Task<PagedResult<IssueListItem>> GetMyIssuesAsync(string userId, string? search, IssueStatus? status, int page);
 
     /// <summary>Everyone's issues that are still open. No reporter names.</summary>
     Task<PagedResult<IssueListItem>> GetOpenIssuesAsync(string? search, IssueStatus? status, int page);
 
-    /// <summary>Full details for the detail page. Call only after the View check passed.</summary>
+    /// <summary>Admin: Submitted issues waiting for review, oldest first.</summary>
+    Task<PagedResult<IssueListItem>> GetReviewQueueAsync(string? search, int page);
+
+    /// <summary>Admin: every issue with filters.</summary>
+    Task<PagedResult<IssueListItem>> GetAllIssuesAsync(IssueListFilter filter, int page);
+
+    /// <summary>Support staff: issues of their own team ("mine", "unassigned" or all).</summary>
+    Task<PagedResult<IssueListItem>> GetTeamIssuesAsync(IssueActor actor, string? scope, IssueListFilter filter, int page);
+
+    // Details
+    /// <summary>Full details, comments and allowed actions. Call only after the View check passed.</summary>
     Task<IssueDetailsViewModel?> GetDetailsAsync(int id, IssueActor actor);
+
+    // Comments
+    /// <summary>Adds a comment. Internal notes are allowed for the assigned team's staff and admins only.</summary>
+    Task<ServiceResult> AddCommentAsync(int issueId, AddCommentViewModel model, IssueActor actor);
 }

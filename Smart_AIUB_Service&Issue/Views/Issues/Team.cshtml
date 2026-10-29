@@ -1,0 +1,59 @@
+@model IssueListViewModel
+@{
+    ViewData["Title"] = "Team queue";
+    ViewData["EmptyText"] = Model.Scope switch
+    {
+        TeamQueueScope.Mine => "Nothing assigned to you right now.",
+        TeamQueueScope.Unassigned => "No unassigned issues in your team's queue.",
+        _ => "Your team has no open issues. 🎉"
+    };
+
+    // Keeps the other filters when switching tabs.
+    string TabUrl(string? scope) => Url.Action("Team", new { scope, search = Model.Search, status = Model.Status, priority = Model.Priority })!;
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Team queue</h1>
+        <p>Issues assigned to your support team. Take an unassigned one, or continue your own.</p>
+    </div>
+</div>
+
+<ul class="nav sc-tabs mb-3">
+    <li class="nav-item"><a class="nav-link @(Model.Scope == TeamQueueScope.Mine ? "active" : "")" href="@TabUrl(TeamQueueScope.Mine)">Assigned to me</a></li>
+    <li class="nav-item"><a class="nav-link @(Model.Scope == TeamQueueScope.Unassigned ? "active" : "")" href="@TabUrl(TeamQueueScope.Unassigned)">Unassigned</a></li>
+    <li class="nav-item"><a class="nav-link @(string.IsNullOrEmpty(Model.Scope) ? "active" : "")" href="@TabUrl(null)">Whole team</a></li>
+</ul>
+
+<form method="get" class="sc-filter row g-2 align-items-end">
+    <input type="hidden" name="scope" value="@Model.Scope" />
+    <div class="col-12 col-md">
+        <label for="search" class="form-label">Search</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Title, room, building or ticket no." />
+    </div>
+    <div class="col-6 col-md-3">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="">Open (any)</option>
+            @foreach (var s in Enum.GetValues<IssueStatus>().Where(s => s != IssueStatus.Submitted))
+            {
+                <option value="@s" selected="@(Model.Status == s)">@s.DisplayName()</option>
+            }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label for="priority" class="form-label">Priority</label>
+        <select id="priority" name="priority" class="form-select">
+            <option value="">All</option>
+            @foreach (var p in Enum.GetValues<IssuePriority>())
+            {
+                <option value="@p" selected="@(Model.Priority == p)">@p</option>
+            }
+        </select>
+    </div>
+    <div class="col-12 col-md-auto d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+    </div>
+</form>
+
+<partial name="_IssueTable" model="Model.Results" view-data="ViewData" />

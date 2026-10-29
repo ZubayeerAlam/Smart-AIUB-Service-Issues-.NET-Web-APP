@@ -1,9 +1,16 @@
 @model IssueDetailsViewModel
 @{
     ViewData["Title"] = Model.TicketNumber;
+
+    // Back link: where this person most likely came from.
+    var (backAction, backController, backText) =
+        Model.IsReporter ? ("Index", "Issues", "My issues")
+        : User.IsInRole(Roles.Admin) ? ("All", "IssueReview", "All issues")
+        : User.IsInRole(Roles.SupportStaff) ? ("Team", "Issues", "Team queue")
+        : ("Open", "Issues", "Open issues");
 }
 
-<a asp-action="@(Model.IsReporter ? "Index" : "Open")" class="sc-back">&larr; @(Model.IsReporter ? "My issues" : "Open issues")</a>
+<a asp-controller="@backController" asp-action="@backAction" class="sc-back">&larr; @backText</a>
 
 <div class="sc-issue-header">
     <div>
@@ -13,7 +20,11 @@
             <partial name="_StatusBadge" model="Model.Status" />
             @if (Model.Priority is not null)
             {
-                <span class="sc-badge sc-badge-muted">Priority: @Model.Priority</span>
+                <span class="sc-badge @Model.Priority.Value.BadgeClass()">Priority: @Model.Priority</span>
+            }
+            @if (Model.ReopenCount > 0)
+            {
+                <span class="sc-badge sc-badge-warning">Reopened @Model.ReopenCount×</span>
             }
             <span class="text-muted small">Reported @Model.CreatedAt.ToDisplay()</span>
         </div>
@@ -39,49 +50,140 @@
     <div class="collapse" id="cancelForm">
         <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="sc-panel mb-3"
               data-confirm="Cancel this issue? This cannot be undone.">
-            <label for="Reason" class="form-label">Why are you cancelling? (optional)</label>
-            <input id="Reason" name="Reason" class="form-control mb-2" maxlength="500" placeholder="e.g. It works again" />
+            <label for="cancelNote" class="form-label">Why are you cancelling? (optional)</label>
+            <input id="cancelNote" name="Note" class="form-control mb-2" maxlength="500" placeholder="e.g. It works again" />
             <button type="submit" class="btn btn-danger">Yes, cancel this issue</button>
         </form>
     </div>
 }
 
 <div class="row g-4">
-    <div class="col-lg-8">
-        <div class="sc-panel mb-4">
-            <h2 class="sc-panel-title">Description</h2>
-            <p class="mb-0 sc-pre">@Model.Description</p>
-        </div>
+    @* ---------- Right column on desktop, first on phones: what can I do now? ---------- *@
+    <div class="col-lg-4 order-lg-2">
 
-        @if (Model.ResolutionNote is not null)
+        @if (Model.CanClose || Model.CanReopen)
         {
-            <div class="sc-panel sc-panel-success mb-4">
-                <h2 class="sc-panel-title">Resolution</h2>
-                <p class="mb-0 sc-pre">@Model.ResolutionNote</p>
+            <div class="sc-panel sc-panel-action mb-4">
+                <h2 class="sc-panel-title">Is it fixed?</h2>
+                <p class="small text-muted">The support team marked this issue as resolved.</p>
+                @if (Model.CanClose)
+                {
+                    <form asp-action="Close" asp-route-id="@Model.Id" method="post" class="mb-3">
+                        <button type="submit" class="btn btn-success w-100">Yes, it's fixed. Close it.</button>
+                    </form>
+                }
+                @if (Model.CanReopen)
+                {
+                    <form asp-action="Reopen" asp-route-id="@Model.Id" method="post">
+                        <label for="reopenNote" class="form-label">Still a problem?</label>
+                        <textarea id="reopenNote" name="Note" class="form-control mb-2" rows="2" maxlength="2000" required
+                                  placeholder="What is still wrong?"></textarea>
+                        <button type="submit" class="btn btn-outline-danger w-100">Reopen issue</button>
+                        <div class="form-text">You can reopen until @Model.ReopenUntil!.Value.ToDisplay().</div>
+                    </form>
+                }
             </div>
         }
 
-        <div class="sc-panel">
-            <h2 class="sc-panel-title">Timeline</h2>
-            <ol class="sc-timeline">
-                @foreach (var h in Model.History)
-                {
-                    <li>
-                        <div class="d-flex flex-wrap gap-2 align-items-center">
-                            <partial name="_StatusBadge" model="h.ToStatus" />
-                            <span class="small text-muted">@h.ChangedAt.ToDisplay() · @h.ChangedByName</span>
-                        </div>
-                        @if (!string.IsNullOrEmpty(h.Note))
-                        {
-                            <div class="small mt-1">@h.Note</div>
-                        }
-                    </li>
-                }
-            </ol>
-        </div>
-    </div>
+        @if (Model.CanAssign)
+        {
+            <div class="sc-panel sc-panel-action mb-4">
+                <h2 class="sc-panel-title">@(Model.Status == IssueStatus.Submitted ? "Review" : "Reassign")</h2>
+                <form asp-controller="IssueReview" asp-action="Assign" asp-route-id="@Model.Id" method="post">
+                    <div class="mb-2">
+                        <label for="Priority" class="form-label">Priority</label>
+                        <select id="Priority" name="Priority" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            @foreach (var p in Enum.GetValues<IssuePriority>())
+                            {
+                                <option value="@p" selected="@(Model.Assign.Priority == p)">@p</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="TeamId" class="form-label">Support team</label>
+                        <select id="TeamId" name="TeamId" class="form-select" required>
+                            <option value="">-- Select --</option>
+                            @foreach (var t in Model.TeamOptions)
+                            {
+                                <option value="@t.Value" selected="@(t.Value == Model.Assign.TeamId?.ToString())">@t.Text</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-2">
+                        <label for="StaffId" class="form-label">Technician (optional)</label>
+                        <select id="StaffId" name="StaffId" class="form-select">
+                            <option value="">Let the team decide</option>
+                            @foreach (var s in Model.StaffChoices)
+                            {
+                                <option value="@s.Id" data-team="@s.TeamId" selected="@(s.Id == Model.Assign.StaffId)">@s.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="assignNote" class="form-label">Note (optional)</label>
+                        <input id="assignNote" name="Note" class="form-control" maxlength="1000" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">@(Model.Status == IssueStatus.Submitted ? "Assign" : "Reassign")</button>
+                </form>
 
-    <div class="col-lg-4">
+                @if (Model.CanReject)
+                {
+                    <hr />
+                    <form asp-controller="IssueReview" asp-action="Reject" asp-route-id="@Model.Id" method="post"
+                          data-confirm="Reject this issue? The reporter will see your reason.">
+                        <label for="rejectNote" class="form-label">Or reject it</label>
+                        <input id="rejectNote" name="Note" class="form-control mb-2" maxlength="1000" required
+                               placeholder="Reason, e.g. duplicate of ISS-000012" />
+                        <button type="submit" class="btn btn-outline-danger w-100">Reject</button>
+                    </form>
+                }
+            </div>
+        }
+
+        @if (Model.HasAnyWorkAction)
+        {
+            <div class="sc-panel sc-panel-action mb-4">
+                <h2 class="sc-panel-title">Work</h2>
+                @if (Model.CanTake)
+                {
+                    <form asp-action="Take" asp-route-id="@Model.Id" method="post" class="mb-2">
+                        <button type="submit" class="btn btn-outline-primary w-100">Take this issue</button>
+                    </form>
+                }
+                @if (Model.CanStart)
+                {
+                    <form asp-action="Start" asp-route-id="@Model.Id" method="post" class="mb-2">
+                        <button type="submit" class="btn btn-primary w-100">Start work</button>
+                    </form>
+                }
+                @if (Model.CanResume)
+                {
+                    <form asp-action="Resume" asp-route-id="@Model.Id" method="post" class="mb-2">
+                        <button type="submit" class="btn btn-primary w-100">Resume work</button>
+                    </form>
+                }
+                @if (Model.CanResolve)
+                {
+                    <form asp-action="Resolve" asp-route-id="@Model.Id" method="post" class="mb-3">
+                        <label for="resolveNote" class="form-label">What did you do to fix it?</label>
+                        <textarea id="resolveNote" name="Note" class="form-control mb-2" rows="3" maxlength="2000" minlength="10" required
+                                  placeholder="e.g. Replaced the projector lamp and tested it."></textarea>
+                        <button type="submit" class="btn btn-success w-100">Mark as resolved</button>
+                    </form>
+                }
+                @if (Model.CanHold)
+                {
+                    <form asp-action="Hold" asp-route-id="@Model.Id" method="post">
+                        <label for="holdNote" class="form-label">Put on hold</label>
+                        <input id="holdNote" name="Note" class="form-control mb-2" maxlength="1000" required
+                               placeholder="Reason, e.g. waiting for spare parts" />
+                        <button type="submit" class="btn btn-outline-warning w-100">Put on hold</button>
+                    </form>
+                }
+            </div>
+        }
+
         <div class="sc-panel">
             <h2 class="sc-panel-title">Details</h2>
             <dl class="sc-dl mb-0">
@@ -96,9 +198,126 @@
                 <dd>@(Model.TeamName ?? "Not assigned yet")</dd>
                 <dt>Technician</dt>
                 <dd>@(Model.StaffName ?? "—")</dd>
+                @if (Model.ResolvedAt is not null)
+                {
+                    <dt>Resolved</dt>
+                    <dd>@Model.ResolvedAt.Value.ToDisplay()</dd>
+                }
                 <dt>Last updated</dt>
                 <dd>@Model.UpdatedAt.ToDisplay()</dd>
             </dl>
         </div>
     </div>
+
+    @* ---------- Main column ---------- *@
+    <div class="col-lg-8 order-lg-1">
+        <div class="sc-panel mb-4">
+            <h2 class="sc-panel-title">Description</h2>
+            <p class="mb-0 sc-pre">@Model.Description</p>
+        </div>
+
+        @if (Model.ResolutionNote is not null)
+        {
+            <div class="sc-panel sc-panel-success mb-4">
+                <h2 class="sc-panel-title">Resolution</h2>
+                <p class="mb-0 sc-pre">@Model.ResolutionNote</p>
+            </div>
+        }
+
+        <div class="sc-panel mb-4">
+            <h2 class="sc-panel-title">Comments (@Model.Comments.Count)</h2>
+
+            @if (Model.Comments.Count == 0)
+            {
+                <p class="text-muted small">No comments yet.</p>
+            }
+            @foreach (var c in Model.Comments)
+            {
+                <div class="sc-comment @(c.IsInternal ? "sc-comment-internal" : "")">
+                    <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+                        <span class="fw-semibold">@c.AuthorName</span>
+                        @if (c.AuthorRole is not null)
+                        {
+                            <span class="sc-badge sc-badge-role">@c.AuthorRole</span>
+                        }
+                        @if (c.IsInternal)
+                        {
+                            <span class="sc-badge sc-badge-warning" title="Only support staff and admins can see this">Internal note</span>
+                        }
+                        <span class="small text-muted">@c.CreatedAt.ToDisplay()</span>
+                    </div>
+                    <div class="sc-pre">@c.Body</div>
+                </div>
+            }
+
+            @if (Model.CanComment)
+            {
+                <form asp-action="Comment" asp-route-id="@Model.Id" method="post" class="mt-3">
+                    <label for="Body" class="visually-hidden">Comment</label>
+                    <textarea id="Body" name="Body" class="form-control mb-2" rows="3" maxlength="2000" required
+                              placeholder="Write a comment…"></textarea>
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+                        @if (Model.CanSeeInternal)
+                        {
+                            <div class="form-check mb-0">
+                                <input id="IsInternal" name="IsInternal" type="checkbox" value="true" class="form-check-input" />
+                                <label for="IsInternal" class="form-check-label small">Internal note (hidden from the reporter)</label>
+                            </div>
+                        }
+                        else
+                        {
+                            <span></span>
+                        }
+                        <button type="submit" class="btn btn-primary">Post comment</button>
+                    </div>
+                </form>
+            }
+            else if (Model.Status.IsFinal())
+            {
+                <p class="small text-muted mt-3 mb-0">This issue is @Model.Status.DisplayName().ToLower(); comments are closed.</p>
+            }
+        </div>
+
+        <div class="sc-panel">
+            <h2 class="sc-panel-title">Timeline</h2>
+            <ol class="sc-timeline">
+                @foreach (var h in Model.History)
+                {
+                    <li>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <partial name="_StatusBadge" model="h.ToStatus" />
+                            <span class="small text-muted">@h.ChangedAt.ToDisplay() · @h.ChangedByName</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(h.Note))
+                        {
+                            <div class="small mt-1 sc-pre">@h.Note</div>
+                        }
+                    </li>
+                }
+            </ol>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    @if (Model.CanAssign)
+    {
+        <script>
+            // Only offer technicians from the selected team (the server checks this too).
+            (function () {
+                const team = document.getElementById("TeamId");
+                const staff = document.getElementById("StaffId");
+                function filterStaff() {
+                    for (const option of staff.options) {
+                        if (!option.dataset.team) continue; // "Let the team decide"
+                        const match = option.dataset.team === team.value;
+                        option.hidden = !match;
+                        if (!match && option.selected) staff.value = "";
+                    }
+                }
+                team.addEventListener("change", filterStaff);
+                filterStaff();
+            })();
+        </script>
+    }
+}

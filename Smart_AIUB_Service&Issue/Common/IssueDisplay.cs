@@ -32,5 +32,13 @@ public static class IssueDisplay
         _ => "sc-st-stopped" // Rejected, Cancelled
     };
 
+    public static string BadgeClass(this IssuePriority priority) => priority switch
+    {
+        IssuePriority.Critical => "sc-pr-critical",
+        IssuePriority.High => "sc-pr-high",
+        IssuePriority.Medium => "sc-pr-medium",
+        _ => "sc-pr-low"
+    };
+
     public static string FloorName(int floor) => floor == 0 ? "Ground floor" : $"Floor {floor}";
 }

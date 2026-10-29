@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Smart_AIUB_Service_Issue.Authorization;
 using Smart_AIUB_Service_Issue.Common;
 using Smart_AIUB_Service_Issue.Data;
@@ -13,11 +14,15 @@ namespace Smart_AIUB_Service_Issue.Services;
 public class IssueService : IIssueService
 {
     private readonly ApplicationDbContext _db;
+    private readonly IssueOptions _options;
 
-    public IssueService(ApplicationDbContext db)
+    public IssueService(ApplicationDbContext db, IOptions<IssueOptions> options)
     {
         _db = db;
+        _options = options.Value;
     }
+
+    // ---------- Report form ----------
 
     public async Task FillFormOptionsAsync(IssueFormViewModel model)
     {
@@ -139,16 +144,47 @@ public class IssueService : IIssueService
         return ServiceResult.Success();
     }
 
+    // ---------- Lists ----------
+
     public Task<PagedResult<IssueListItem>> GetMyIssuesAsync(string userId, string? search, IssueStatus? status, int page) =>
-        ToListItems(Filter(_db.Issues.Where(i => i.ReporterId == userId), search, status), includeReporter: false)
+        ToListItems(Filter(_db.Issues.Where(i => i.ReporterId == userId), new IssueListFilter { Search = search, Status = status }),
+                staffView: false)
             .ToPagedResultAsync(page);
 
     public Task<PagedResult<IssueListItem>> GetOpenIssuesAsync(string? search, IssueStatus? status, int page) =>
-        ToListItems(Filter(_db.Issues.Where(i =>
-                i.Status != IssueStatus.Closed &&
-                i.Status != IssueStatus.Rejected &&
-                i.Status != IssueStatus.Cancelled), search, status), includeReporter: false)
+        ToListItems(Filter(OpenIssues(), new IssueListFilter { Search = search, Status = status }), staffView: false)
             .ToPagedResultAsync(page);
+
+    public Task<PagedResult<IssueListItem>> GetReviewQueueAsync(string? search, int page) =>
+        ToListItems(Filter(_db.Issues.Where(i => i.Status == IssueStatus.Submitted), new IssueListFilter { Search = search }),
+                staffView: true, oldestFirst: true) // first come, first served
+            .ToPagedResultAsync(page);
+
+    public Task<PagedResult<IssueListItem>> GetAllIssuesAsync(IssueListFilter filter, int page) =>
+        ToListItems(Filter(_db.Issues, filter), staffView: true).ToPagedResultAsync(page);
+
+    public Task<PagedResult<IssueListItem>> GetTeamIssuesAsync(IssueActor actor, string? scope, IssueListFilter filter, int page)
+    {
+        var query = _db.Issues.Where(i => actor.TeamId != null && i.AssignedTeamId == actor.TeamId);
+
+        query = scope switch
+        {
+            TeamQueueScope.Mine => query.Where(i => i.AssignedStaffId == actor.UserId),
+            TeamQueueScope.Unassigned => query.Where(i => i.AssignedStaffId == null && i.Status == IssueStatus.Assigned),
+            _ => query
+        };
+
+        // Without a status filter, finished work is hidden so the queue stays short.
+        if (filter.Status is null)
+        {
+            query = query.Where(i =>
+                i.Status != IssueStatus.Closed && i.Status != IssueStatus.Rejected && i.Status != IssueStatus.Cancelled);
+        }
+
+        return ToListItems(Filter(query, filter), staffView: true).ToPagedResultAsync(page);
+    }
+
+    // ---------- Details ----------
 
     public async Task<IssueDetailsViewModel?> GetDetailsAsync(int id, IssueActor actor)
     {
@@ -178,7 +214,9 @@ public class IssueService : IIssueService
                 StaffName = i.AssignedStaff != null ? i.AssignedStaff.FullName : null,
                 ResolutionNote = i.ResolutionNote,
                 CreatedAt = i.CreatedAt,
-                UpdatedAt = i.UpdatedAt
+                UpdatedAt = i.UpdatedAt,
+                ResolvedAt = i.ResolvedAt,
+                ReopenCount = i.ReopenCount
             })
             .FirstAsync();
 
@@ -188,11 +226,113 @@ public class IssueService : IIssueService
             .Select(h => new IssueHistoryItem(h.FromStatus, h.ToStatus, h.ChangedBy.FullName, h.ChangedAt, h.Note))
             .ToListAsync();
 
+        // Internal notes are removed in the query itself, so they never reach a reporter's page.
+        var canSeeInternal = IssuePermissions.CanSeeInternal(issue, actor);
+        model.Comments = await _db.IssueComments.AsNoTracking()
+            .Where(c => c.IssueId == id && (canSeeInternal || !c.IsInternal))
+            .OrderBy(c => c.CreatedAt).ThenBy(c => c.Id)
+            .Select(c => new IssueCommentItem(
+                c.Author.FullName,
+                c.AuthorId == issue.ReporterId
+                    ? "Reporter"
+                    : (from ur in _db.UserRoles
+                       join r in _db.Roles on ur.RoleId equals r.Id
+                       where ur.UserId == c.AuthorId
+                       select r.Name).FirstOrDefault(),
+                c.Body,
+                c.IsInternal,
+                c.CreatedAt))
+            .ToListAsync();
+
+        var now = DateTime.UtcNow;
         model.IsReporter = IssuePermissions.IsReporter(issue, actor);
         model.CanEdit = IssuePermissions.CanEdit(issue, actor);
         model.CanCancel = IssuePermissions.CanCancel(issue, actor);
+        model.CanAssign = IssuePermissions.CanAssign(issue, actor);
+        model.CanReject = IssuePermissions.CanReject(issue, actor);
+        model.CanTake = IssuePermissions.CanTake(issue, actor);
+        model.CanStart = IssuePermissions.CanStart(issue, actor);
+        model.CanHold = IssuePermissions.CanHold(issue, actor);
+        model.CanResume = IssuePermissions.CanResume(issue, actor);
+        model.CanResolve = IssuePermissions.CanResolve(issue, actor);
+        model.CanClose = IssuePermissions.CanClose(issue, actor);
+        model.CanReopen = IssuePermissions.CanReopen(issue, actor, now, _options.ReopenWindowDays);
+        model.CanComment = IssuePermissions.CanComment(issue, actor);
+        model.CanSeeInternal = canSeeInternal;
+        model.ReopenUntil = issue.ResolvedAt?.AddDays(_options.ReopenWindowDays);
+
+        if (model.CanAssign)
+        {
+            await FillAssignOptionsAsync(model, issue);
+        }
         return model;
     }
+
+    private async Task FillAssignOptionsAsync(IssueDetailsViewModel model, Issue issue)
+    {
+        // Pre-select the current team, or the category's default team for a new issue.
+        var defaultTeamId = issue.AssignedTeamId ??
+            await _db.IssueCategories.Where(c => c.Id == issue.CategoryId).Select(c => c.DefaultSupportTeamId).FirstOrDefaultAsync();
+
+        model.Assign = new AssignIssueViewModel
+        {
+            Priority = issue.Priority,
+            TeamId = defaultTeamId,
+            StaffId = issue.AssignedStaffId
+        };
+
+        model.TeamOptions = await _db.SupportTeams.AsNoTracking()
+            .Where(t => t.IsActive)
+            .OrderBy(t => t.Name)
+            .Select(t => new SelectListItem(t.Name, t.Id.ToString()))
+            .ToListAsync();
+
+        model.StaffChoices = await (
+            from u in _db.Users.AsNoTracking()
+            join ur in _db.UserRoles on u.Id equals ur.UserId
+            join r in _db.Roles on ur.RoleId equals r.Id
+            where r.Name == Roles.SupportStaff && u.IsActive && u.SupportTeamId != null && u.SupportTeam!.IsActive
+            orderby u.FullName
+            select new StaffChoice(u.Id, u.FullName, u.SupportTeamId!.Value)).ToListAsync();
+    }
+
+    // ---------- Comments ----------
+
+    public async Task<ServiceResult> AddCommentAsync(int issueId, AddCommentViewModel model, IssueActor actor)
+    {
+        var issue = await _db.Issues.AsNoTracking().FirstOrDefaultAsync(i => i.Id == issueId);
+        if (issue is null)
+        {
+            return ServiceResult.Fail("Issue not found.");
+        }
+        if (!IssuePermissions.CanComment(issue, actor))
+        {
+            return ServiceResult.Fail("Comments are closed for this issue.");
+        }
+        if (model.IsInternal && !IssuePermissions.CanSeeInternal(issue, actor))
+        {
+            return ServiceResult.Fail("Only support staff and admins can write internal notes.");
+        }
+
+        var body = model.Body.Trim();
+        if (body.Length == 0)
+        {
+            return ServiceResult.Fail("Please write a comment.", nameof(model.Body));
+        }
+
+        _db.IssueComments.Add(new IssueComment
+        {
+            IssueId = issueId,
+            AuthorId = actor.UserId,
+            Body = body,
+            IsInternal = model.IsInternal,
+            CreatedAt = DateTime.UtcNow
+        });
+        await _db.SaveChangesAsync();
+        return ServiceResult.Success();
+    }
+
+    // ---------- Helpers ----------
 
     /// <summary>
     /// Category must be active; the room must be active, in an active building, and
@@ -221,16 +361,30 @@ public class IssueService : IIssueService
         return null;
     }
 
-    private static IQueryable<Issue> Filter(IQueryable<Issue> query, string? search, IssueStatus? status)
+    private IQueryable<Issue> OpenIssues() =>
+        _db.Issues.Where(i =>
+            i.Status != IssueStatus.Closed &&
+            i.Status != IssueStatus.Rejected &&
+            i.Status != IssueStatus.Cancelled);
+
+    private static IQueryable<Issue> Filter(IQueryable<Issue> query, IssueListFilter filter)
     {
-        if (status is not null)
+        if (filter.Status is not null)
         {
-            query = query.Where(i => i.Status == status);
+            query = query.Where(i => i.Status == filter.Status);
+        }
+        if (filter.Priority is not null)
+        {
+            query = query.Where(i => i.Priority == filter.Priority);
+        }
+        if (filter.TeamId is not null)
+        {
+            query = query.Where(i => i.AssignedTeamId == filter.TeamId);
         }
 
-        if (!string.IsNullOrWhiteSpace(search))
+        if (!string.IsNullOrWhiteSpace(filter.Search))
         {
-            var term = search.Trim();
+            var term = filter.Search.Trim();
             // "ISS-000123" or "123" finds issue 123 directly.
             var idText = term.StartsWith("ISS-", StringComparison.OrdinalIgnoreCase) ? term[4..] : term;
             var hasId = int.TryParse(idText, out var id);
@@ -245,9 +399,14 @@ public class IssueService : IIssueService
         return query;
     }
 
-    private static IQueryable<IssueListItem> ToListItems(IQueryable<Issue> query, bool includeReporter) =>
-        query.AsNoTracking()
-            .OrderByDescending(i => i.CreatedAt).ThenByDescending(i => i.Id)
+    /// <param name="staffView">true on staff/admin lists: also show reporter and assignee.</param>
+    private static IQueryable<IssueListItem> ToListItems(IQueryable<Issue> query, bool staffView, bool oldestFirst = false)
+    {
+        var ordered = oldestFirst
+            ? query.OrderBy(i => i.CreatedAt).ThenBy(i => i.Id)
+            : query.OrderByDescending(i => i.CreatedAt).ThenByDescending(i => i.Id);
+
+        return ordered.AsNoTracking()
             .Select(i => new IssueListItem(
                 i.Id,
                 i.Title,
@@ -257,5 +416,9 @@ public class IssueService : IIssueService
                 i.Status,
                 i.Priority,
                 i.CreatedAt,
-                includeReporter ? i.Reporter.FullName : null));
+                staffView ? i.Reporter.FullName : null,
+                staffView && i.AssignedTeam != null
+                    ? i.AssignedTeam.Name + (i.AssignedStaff != null ? " · " + i.AssignedStaff.FullName : "")
+                    : null));
+    }
 }

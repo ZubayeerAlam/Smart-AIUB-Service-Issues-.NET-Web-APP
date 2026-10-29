@@ -49,7 +49,10 @@ public class IssueFormViewModel
 /// <summary>One option in the cascading Room dropdown (returned as JSON).</summary>
 public record RoomOption(int Id, string Text);
 
-/// <summary>One row in any issue list. ReporterName is null on the public list.</summary>
+/// <summary>
+/// One row in any issue list. ReporterName and AssignedTo are only filled on
+/// staff/admin lists (null on the reporter's and the public list).
+/// </summary>
 public record IssueListItem(
     int Id,
     string Title,
@@ -59,19 +62,80 @@ public record IssueListItem(
     IssueStatus Status,
     IssuePriority? Priority,
     DateTime CreatedAt,
-    string? ReporterName)
+    string? ReporterName,
+    string? AssignedTo)
 {
     public string TicketNumber => IssueDisplay.TicketNumber(Id);
 }
 
-public class IssueListViewModel
+/// <summary>Filter values shared by every issue list (unused ones stay null).</summary>
+public class IssueListFilter
 {
     public string? Search { get; set; }
     public IssueStatus? Status { get; set; }
+    public IssuePriority? Priority { get; set; }
+    public int? TeamId { get; set; }
+}
+
+public class IssueListViewModel : IssueListFilter
+{
     public PagedResult<IssueListItem> Results { get; set; } = null!;
+
+    /// <summary>Team dropdown on the admin "All issues" list.</summary>
+    public IEnumerable<SelectListItem> TeamOptions { get; set; } = [];
+
+    /// <summary>Staff team queue: "mine", "unassigned" or "" (whole team).</summary>
+    public string? Scope { get; set; }
+}
+
+/// <summary>Values for the staff team queue "Scope" filter.</summary>
+public static class TeamQueueScope
+{
+    public const string Mine = "mine";
+    public const string Unassigned = "unassigned";
 }
 
 public record IssueHistoryItem(IssueStatus? FromStatus, IssueStatus ToStatus, string ChangedByName, DateTime ChangedAt, string? Note);
+
+public record IssueCommentItem(string AuthorName, string? AuthorRole, string Body, bool IsInternal, DateTime CreatedAt);
+
+/// <summary>A technician choice in the assign form; TeamId lets the page filter by team.</summary>
+public record StaffChoice(string Id, string Name, int TeamId);
+
+/// <summary>Admin "Assign / reassign" form on the details page.</summary>
+public class AssignIssueViewModel
+{
+    [Required(ErrorMessage = "Please choose a priority.")]
+    public IssuePriority? Priority { get; set; }
+
+    [Required(ErrorMessage = "Please choose a support team.")]
+    [Display(Name = "Support team")]
+    public int? TeamId { get; set; }
+
+    [Display(Name = "Technician (optional)")]
+    public string? StaffId { get; set; }
+
+    [StringLength(1000)]
+    [Display(Name = "Note (optional)")]
+    public string? Note { get; set; }
+}
+
+/// <summary>Any action that needs a short text: reject, hold, resolve, reopen, cancel.</summary>
+public class IssueNoteViewModel
+{
+    [StringLength(2000)]
+    public string? Note { get; set; }
+}
+
+public class AddCommentViewModel
+{
+    [Required(ErrorMessage = "Please write a comment.")]
+    [StringLength(2000)]
+    public string Body { get; set; } = string.Empty;
+
+    /// <summary>Staff/admin only; ignored (and refused) for reporters.</summary>
+    public bool IsInternal { get; set; }
+}
 
 public class IssueDetailsViewModel
 {
@@ -93,16 +157,34 @@ public class IssueDetailsViewModel
     public string? ResolutionNote { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
+    public DateTime? ResolvedAt { get; set; }
+    public int ReopenCount { get; set; }
     public List<IssueHistoryItem> History { get; set; } = [];
+    public List<IssueCommentItem> Comments { get; set; } = [];
 
     // What the current user may do (decided by IssuePermissions).
     public bool IsReporter { get; set; }
     public bool CanEdit { get; set; }
     public bool CanCancel { get; set; }
-}
+    public bool CanAssign { get; set; }
+    public bool CanReject { get; set; }
+    public bool CanTake { get; set; }
+    public bool CanStart { get; set; }
+    public bool CanHold { get; set; }
+    public bool CanResume { get; set; }
+    public bool CanResolve { get; set; }
+    public bool CanClose { get; set; }
+    public bool CanReopen { get; set; }
+    public bool CanComment { get; set; }
+    public bool CanSeeInternal { get; set; }
 
-public class CancelIssueViewModel
-{
-    [StringLength(500)]
-    public string? Reason { get; set; }
+    /// <summary>Last moment the reporter may reopen (UTC), when the issue is Resolved.</summary>
+    public DateTime? ReopenUntil { get; set; }
+
+    // Admin assign form (filled only when CanAssign).
+    public AssignIssueViewModel Assign { get; set; } = new();
+    public IEnumerable<SelectListItem> TeamOptions { get; set; } = [];
+    public List<StaffChoice> StaffChoices { get; set; } = [];
+
+    public bool HasAnyWorkAction => CanTake || CanStart || CanHold || CanResume || CanResolve;
 }

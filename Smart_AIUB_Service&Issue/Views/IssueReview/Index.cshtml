@@ -1,0 +1,26 @@
+@model IssueListViewModel
+@{
+    ViewData["Title"] = "Review queue";
+    ViewData["EmptyText"] = "Nothing to review. All new issues have been assigned. 🎉";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Review queue</h1>
+        <p>New issues waiting for you, oldest first. Open one to set its priority and assign a team, or reject it.</p>
+    </div>
+    <a asp-action="All" class="btn btn-light">All issues</a>
+</div>
+
+<form method="get" class="sc-filter row g-2 align-items-end">
+    <div class="col-12 col-md">
+        <label for="search" class="form-label">Search</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Title, room, building or ticket no." />
+    </div>
+    <div class="col-12 col-md-auto d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+        <a asp-action="Index" class="btn btn-light flex-fill">Reset</a>
+    </div>
+</form>
+
+<partial name="_IssueTable" model="Model.Results" view-data="ViewData" />

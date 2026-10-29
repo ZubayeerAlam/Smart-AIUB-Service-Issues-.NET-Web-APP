@@ -34,8 +34,26 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
-                        @if (User.Identity?.IsAuthenticated == true)
+                        @if (User.IsInRole(Roles.Admin))
                         {
+                            @* Admins get one "Issues" menu so the navbar stays short. *@
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Issues</a>
+                                <ul class="dropdown-menu sc-dropdown">
+                                    <li><a class="dropdown-item fw-semibold" asp-controller="IssueReview" asp-action="Index">Review queue</a></li>
+                                    <li><a class="dropdown-item" asp-controller="IssueReview" asp-action="All">All issues</a></li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li><a class="dropdown-item" asp-controller="Issues" asp-action="Report">Report an issue</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Issues" asp-action="Index">My issues</a></li>
+                                </ul>
+                            </li>
+                        }
+                        else if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole(Roles.SupportStaff))
+                            {
+                                <li class="nav-item"><a class="nav-link fw-semibold" asp-controller="Issues" asp-action="Team" asp-route-scope="@TeamQueueScope.Mine">Team queue</a></li>
+                            }
                             <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Report">Report issue</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Index">My issues</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Open">Open issues</a></li>
@@ -58,7 +76,6 @@
                                 </ul>
                             </li>
                         }
-                        @* Report Issue, Review Queue, Assets, ... are added in later milestones. *@
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
