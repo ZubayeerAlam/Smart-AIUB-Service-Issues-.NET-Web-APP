@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Smart_AIUB_Service&Issue/Smart_AIUB_Service&Issue.csproj", "--launch-profile", "http"],
+      "port": 5255
+    }
+  ]
+}

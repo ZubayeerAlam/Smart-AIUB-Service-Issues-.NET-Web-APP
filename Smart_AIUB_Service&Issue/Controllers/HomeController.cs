@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Smart_AIUB_Service_Issue.Models;
 using System.Diagnostics;
 
 namespace Smart_AIUB_Service_Issue.Controllers
 {
+    [AllowAnonymous]
     public class HomeController : Controller
     {
         public IActionResult Index()

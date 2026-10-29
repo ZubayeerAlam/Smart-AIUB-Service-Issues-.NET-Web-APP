@@ -1,0 +1,34 @@
+@using Smart_AIUB_Service_Issue.Authorization
+
+@*
+    Right side of the navbar. The role badge is only a display; real access
+    checks happen on the server with [Authorize] / policies.
+*@
+<ul class="navbar-nav">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        var role = Roles.All.FirstOrDefault(r => User.IsInRole(r));
+
+        <li class="nav-item d-flex align-items-center me-2">
+            <span class="navbar-text text-dark">@User.Identity.Name</span>
+            @if (role is not null)
+            {
+                <span class="badge text-bg-secondary ms-2">@role</span>
+            }
+        </li>
+        <li class="nav-item">
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                <button type="submit" class="btn btn-link nav-link text-dark">Log out</button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Log in</a>
+        </li>
+    }
+</ul>
