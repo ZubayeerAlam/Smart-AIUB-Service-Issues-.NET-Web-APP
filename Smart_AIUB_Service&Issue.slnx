@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Smart_AIUB_Service&amp;Issue/Smart_AIUB_Service&amp;Issue.csproj" />
+  <Project Path="Smart_AIUB_Service_Issue.Tests/Smart_AIUB_Service_Issue.Tests.csproj" />
+</Solution>
