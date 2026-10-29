@@ -1,18 +1,93 @@
 ﻿@{
     ViewData["Title"] = "Home";
+    ViewData["FullWidth"] = true;
+    var isLoggedIn = User.Identity?.IsAuthenticated == true;
 }
 
-<div class="text-center py-5">
-    <h1 class="display-5">AIUB Smart Campus</h1>
-    <p class="lead">Report campus problems: broken projectors, lab PCs, Wi-Fi, electrical issues and more.</p>
+<section class="sc-hero">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="sc-eyebrow">Campus service &amp; maintenance</span>
+                <h1 class="mb-3">Report it.<br />Track it.<br /><span>Get it fixed.</span></h1>
+                <p class="lead mb-4">
+                    Broken projector, lab PC down, no Wi-Fi? Tell us in under a minute
+                    and follow every step until it's fixed.
+                </p>
 
-    @if (User.Identity?.IsAuthenticated == true)
-    {
-        <p>Welcome back, <strong>@User.Identity.Name</strong>. Your dashboard is coming in a later milestone.</p>
-    }
-    else
-    {
-        <a asp-controller="Account" asp-action="Login" class="btn btn-primary me-2">Log in</a>
-        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">Register</a>
-    }
-</div>
+                @if (isLoggedIn)
+                {
+                    <p class="mb-0 fs-5">Welcome back, <strong>@User.Identity!.Name</strong> 👋</p>
+                    <p class="text-white-50 small">Your dashboard arrives in a later milestone.</p>
+                }
+                else
+                {
+                    <div class="d-flex flex-column flex-sm-row gap-3">
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg text-primary">Create an account</a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">Log in</a>
+                    </div>
+                }
+            </div>
+
+            <div class="col-lg-6">
+                <div class="sc-hero-visual">
+                    <img src="~/images/aiub-campus.jpg" alt="AIUB campus building and the dome" class="sc-hero-photo" asp-append-version="true" />
+
+                @* A sample issue card, just to show what tracking looks like (desktop only). *@
+                <div class="sc-preview sc-preview-float d-none d-lg-block">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="small text-muted">ISS-000123 · Projector</div>
+                            <div class="fw-bold fs-5">Projector not turning on</div>
+                            <div class="small text-muted">D-Building · Room 301 · Floor 3</div>
+                        </div>
+                        <span class="badge rounded-pill text-bg-primary">In progress</span>
+                    </div>
+                    <div class="border-top pt-2">
+                        <div class="sc-step"><span class="sc-step-dot done"></span><div><div class="fw-semibold">Submitted</div><div class="small text-muted">by a student · 9:05 AM</div></div></div>
+                        <div class="sc-step"><span class="sc-step-dot done"></span><div><div class="fw-semibold">Assigned to IT Support</div><div class="small text-muted">Priority: High · 9:20 AM</div></div></div>
+                        <div class="sc-step"><span class="sc-step-dot active"></span><div><div class="fw-semibold">Technician working on it</div><div class="small text-muted">10:02 AM</div></div></div>
+                        <div class="sc-step"><span class="sc-step-dot"></span><div class="text-muted">Resolved</div></div>
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="container py-5">
+    <div class="text-center mb-4">
+        <h2 class="sc-section-title">How it works</h2>
+        <p class="text-muted">Three simple steps from problem to fix.</p>
+    </div>
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="sc-card">
+                <div class="sc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" /></svg>
+                </div>
+                <h3 class="h5 fw-bold">1. Report</h3>
+                <p class="text-muted mb-0">Pick the category, building and room, then describe the problem.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="sc-card">
+                <div class="sc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.9" /><path d="M16 3.1a4 4 0 0 1 0 7.8" /></svg>
+                </div>
+                <h3 class="h5 fw-bold">2. Assign</h3>
+                <p class="text-muted mb-0">An admin reviews it and sends it to the right support team.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="sc-card">
+                <div class="sc-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                </div>
+                <h3 class="h5 fw-bold">3. Fixed</h3>
+                <p class="text-muted mb-0">Follow every status change, then confirm the fix or reopen it.</p>
+            </div>
+        </div>
+    </div>
+</section>

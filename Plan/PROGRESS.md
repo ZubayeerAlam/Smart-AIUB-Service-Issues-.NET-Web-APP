@@ -107,3 +107,4 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 |---|---|
 | 2026-10-29 | Planning done; M0 and M1 completed; Plan folder created |
 | 2026-10-29 | M2 implemented: Identity, roles, seeder, register/login/logout, tests (9/9) |
+| 2026-10-29 | UI redesign: navy/blue theme, bold brand, full-screen hero, split-screen login/register, phone layout |

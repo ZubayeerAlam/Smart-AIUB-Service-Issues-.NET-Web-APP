@@ -1,0 +1,17 @@
+@*
+    Brand panel shared by Login and Register.
+    Desktop: campus photo panel on the left. Phones/tablets: short photo banner on top.
+*@
+<div class="col-12 d-lg-none sc-auth-banner">@ViewData["Title"] · AIUB Smart Campus</div>
+
+<div class="col-lg-5 d-none d-lg-flex flex-column justify-content-center sc-auth-side">
+    <div style="max-width: 26rem;">
+        <span class="sc-eyebrow">AIUB Smart Campus</span>
+        <h2 class="mb-4">@ViewData["AuthHeading"]</h2>
+        <ul class="list-unstyled mb-0">
+            <li>✔&nbsp; Report a campus problem in under a minute</li>
+            <li>✔&nbsp; Follow every status change until it's fixed</li>
+            <li>✔&nbsp; The right support team gets it straight away</li>
+        </ul>
+    </div>
+</div>
