@@ -3,23 +3,15 @@
     ViewData["Title"] = "Error";
 }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
-
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
-
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+@* Shown for unhandled exceptions outside Development. No technical details on purpose:
+   they are written to the log instead, under the same request id. *@
+<div class="sc-error">
+    <div class="sc-error-code">500</div>
+    <h1>Something went wrong</h1>
+    <p class="text-muted">Sorry, an unexpected error happened. Please try again in a moment.</p>
+    @if (Model.ShowRequestId)
+    {
+        <p class="small text-muted">If it keeps happening, tell the administrator this code: <code>@Model.RequestId</code></p>
+    }
+    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Go to home page</a>
+</div>

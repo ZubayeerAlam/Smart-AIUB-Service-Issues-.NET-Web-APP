@@ -1,0 +1,22 @@
+@{
+    var code = ViewData["Code"] as int? ?? 500;
+    var (title, message) = code switch
+    {
+        404 => ("Page not found", "The page or issue you're looking for doesn't exist, or you don't have access to it."),
+        403 => ("Access denied", "You don't have permission to do that."),
+        400 => ("Something was wrong with that request",
+                "If you were sending a form, it may have expired. Go back, reload the page and try again."),
+        _ => ("Something went wrong", "Please try again in a moment.")
+    };
+    ViewData["Title"] = title;
+}
+
+<div class="sc-error">
+    <div class="sc-error-code">@code</div>
+    <h1>@title</h1>
+    <p class="text-muted">@message</p>
+    <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <a href="javascript:history.back()" class="btn btn-light">Go back</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Go to home page</a>
+    </div>
+</div>

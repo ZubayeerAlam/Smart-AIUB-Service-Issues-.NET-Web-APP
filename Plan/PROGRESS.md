@@ -15,8 +15,8 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | M5 — Review, workflow, history, comments | ✅ (committed `06b8eb0`; your Admin/Staff browser check open) |
 | M6 — Assets & maintenance | ✅ (committed `e8d9ff1`) |
 | M7 — Dashboards | ✅ (committed `b5f1a36`) |
-| M8 — Search, filters & reports | ✅ (not committed yet) |
-| M9 — Hardening & docs | ⬜ **← NEXT** |
+| M8 — Search, filters & reports | ✅ (committed `c3fd8c8`) |
+| M9 — Hardening & docs | ✅ (not committed yet) — **Release 1 complete** |
 
 ---
 
@@ -137,12 +137,20 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 - [x] Tests: **124/124 passed** (15 new: Dhaka ↔ UTC conversions, 18:00 UTC = next Dhaka day, month and single-day edges in reports and the All issues filter, building/category filters, average/median resolution time, maintenance totals, reversed range)
 - [x] Browser check (student): new filters work and keep their selection · empty-filter message · Reports → Access denied
 - [ ] **You:** as Admin open Issues → Reports and try the quick ranges and Print
-- [ ] Commit M8
+- [x] Commit M8 (`c3fd8c8`)
 
-## ⬜ M9 — Hardening & docs ← NEXT
-- [ ] Error pages, logging review, security checklist (IDOR, CSRF, over-posting)
-- [ ] README: setup, User Secrets, migrations, screenshots
-- [ ] Full test run
+## ✅ M9 — Hardening & docs
+- [x] Friendly error pages: 404 / 403 / 400 (`Home/HttpError`, status code kept) and 500 (`Error`, request id only, no stack trace)
+- [x] Security headers on every response: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`
+- [x] Logging review: EF SQL commands quiet in Development; audit logs for admin account changes (create / update / (de)activate / password reset; never passwords); issue reported; user logged in
+- [x] Security checklist **[Plan/SECURITY.md](SECURITY.md)**: authentication, authorization (IDOR), input (CSRF, over-posting, SQL injection, XSS), platform; with where + how verified; known limitations
+- [x] Security tests: only the read-only error page skips anti-forgery · only Login/Register accept anonymous POSTs · form ViewModels contain no forbidden fields · posted role on Edit user is ignored
+- [x] Privacy page written
+- [x] README rewritten (was UTF-16): features, roles, stack, setup, **User Secrets**, **migrations**, run, seed data, tests, structure, security, **screenshots** (`docs/screenshots/`)
+- [x] Full check: Release build 0 warnings · `dotnet list package --vulnerable` none · **131/131 tests passed** · `has-pending-model-changes`: no new migration needed
+- [x] Browser check: 404 page for unknown URL and someone else's issue (status 404) · POST without CSRF token → 400 friendly page, nothing saved · security headers present
+- [ ] **You:** add logged-in screenshots (dashboards, issue page, reports) to `docs/screenshots/`
+- [ ] Commit M9 · push to GitHub
 
 ---
 
@@ -158,3 +166,4 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | 2026-10-29 | M6 implemented: asset types, asset registry, issue→asset link (same room), maintenance records, tests (106/106) |
 | 2026-10-29 | M7 implemented: reporter, support staff and admin dashboards, tests (109/109) |
 | 2026-10-29 | M8 implemented: shared issue filters, date-range reports, Dhaka date boundaries, tests (124/124) |
+| 2026-10-29 | M9 implemented: error pages, security headers, audit logging, security checklist, README + screenshots, full test run (131/131). Release 1 complete |

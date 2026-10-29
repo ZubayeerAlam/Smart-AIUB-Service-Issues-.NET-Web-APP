@@ -846,3 +846,28 @@ body {
     box-shadow: none !important;
   }
 }
+
+/* ---------- Error pages (M9) ---------- */
+
+.sc-error {
+  max-width: 32rem;
+  margin: 3rem auto;
+  text-align: center;
+}
+
+.sc-error-code {
+  font-size: clamp(4rem, 14vw, 6rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--sc-navy-2), var(--sc-blue));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.sc-error h1 {
+  font-weight: 800;
+  font-size: 1.6rem;
+  margin: 0.75rem 0 0.5rem;
+}

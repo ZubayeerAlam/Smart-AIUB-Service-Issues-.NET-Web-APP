@@ -14,18 +14,24 @@ public class UsersController : AdminControllerBase
     private readonly IDepartmentService _departments;
     private readonly ISupportTeamService _teams;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<UsersController> _logger;
 
     public UsersController(
         IUserManagementService users,
         IDepartmentService departments,
         ISupportTeamService teams,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        ILogger<UsersController> logger)
     {
         _users = users;
         _departments = departments;
         _teams = teams;
         _userManager = userManager;
+        _logger = logger;
     }
+
+    // Audit log entries below record which admin changed which account.
+    // Passwords are never logged.
 
     public async Task<IActionResult> Index(string? search, string? status, string? role, int page = 1)
     {
@@ -57,6 +63,7 @@ public class UsersController : AdminControllerBase
             var result = await _users.CreateAsync(model);
             if (result.Succeeded)
             {
+                _logger.LogInformation("Admin {Admin} created {Role} account {Email}", User.Identity!.Name, model.Role, model.Email.Trim());
                 TempData["Success"] = $"{model.Role} account created for {model.Email.Trim()}. Share the temporary password with them privately.";
                 return RedirectToAction(nameof(Index));
             }
@@ -89,6 +96,7 @@ public class UsersController : AdminControllerBase
             var result = await _users.UpdateAsync(model);
             if (result.Succeeded)
             {
+                _logger.LogInformation("Admin {Admin} updated user {UserId}", User.Identity!.Name, id);
                 TempData["Success"] = $"{model.FullName.Trim()} updated.";
                 return RedirectToAction(nameof(Index));
             }
@@ -113,6 +121,10 @@ public class UsersController : AdminControllerBase
     public async Task<IActionResult> SetActive(string id, bool isActive, string? returnUrl)
     {
         var result = await _users.SetActiveAsync(id, isActive, _userManager.GetUserId(User)!);
+        if (result.Succeeded)
+        {
+            _logger.LogWarning("Admin {Admin} {Action} user {UserId}", User.Identity!.Name, isActive ? "activated" : "deactivated", id);
+        }
         Flash(result, isActive
             ? "User activated."
             : "User deactivated. They will be signed out within about 3 minutes.");
@@ -136,6 +148,7 @@ public class UsersController : AdminControllerBase
             var result = await _users.ResetPasswordAsync(id, model.NewPassword);
             if (result.Succeeded)
             {
+                _logger.LogWarning("Admin {Admin} reset the password of user {UserId}", User.Identity!.Name, id);
                 TempData["Success"] = "Password reset. Any lockout was cleared. Share the new password with the user privately.";
                 return RedirectToAction(nameof(Index));
             }

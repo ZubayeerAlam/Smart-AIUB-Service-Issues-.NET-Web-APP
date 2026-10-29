@@ -24,19 +24,22 @@ public class IssuesController : Controller
     private readonly IIssueActorService _actors;
     private readonly IAuthorizationService _authorization;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ILogger<IssuesController> _logger;
 
     public IssuesController(
         IIssueService issues,
         IIssueWorkflowService workflow,
         IIssueActorService actors,
         IAuthorizationService authorization,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        ILogger<IssuesController> logger)
     {
         _issues = issues;
         _workflow = workflow;
         _actors = actors;
         _authorization = authorization;
         _userManager = userManager;
+        _logger = logger;
     }
 
     // ---------- Lists ----------
@@ -80,6 +83,7 @@ public class IssuesController : Controller
             var result = await _issues.ReportAsync(model, _userManager.GetUserId(User)!);
             if (result.Succeeded)
             {
+                _logger.LogInformation("Issue {IssueId} reported by {User}", result.Value, User.Identity!.Name);
                 TempData["Success"] = "Thank you! Your issue was reported. You can follow its progress here.";
                 return RedirectToAction(nameof(Details), new { id = result.Value });
             }

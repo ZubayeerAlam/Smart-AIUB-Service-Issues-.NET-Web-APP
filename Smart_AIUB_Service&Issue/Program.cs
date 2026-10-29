@@ -94,10 +94,25 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    // Unhandled exceptions: log them and show a friendly page without technical details.
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+// Empty 400/404/... responses (e.g. return NotFound()) are re-run through a friendly page.
+// The original status code is kept, so browsers and tests still see 404.
+app.UseStatusCodePagesWithReExecute("/Home/HttpError/{0}");
+
+// Basic security headers on every response.
+app.Use(async (context, next) =>
+{
+    var headers = context.Response.Headers;
+    headers["X-Content-Type-Options"] = "nosniff";                      // don't guess file types
+    headers["X-Frame-Options"] = "DENY";                                // no embedding in other sites (clickjacking)
+    headers["Referrer-Policy"] = "strict-origin-when-cross-origin";     // don't leak full URLs to other sites
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseRouting();

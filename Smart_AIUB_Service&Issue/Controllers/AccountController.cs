@@ -130,6 +130,7 @@ public class AccountController : Controller
 
         // Step 3: create the login cookie.
         await _signInManager.SignInAsync(user, isPersistent: model.RememberMe);
+        _logger.LogInformation("User logged in: {Email}", user.Email);
 
         // Only redirect to pages inside this site (prevents "open redirect" attacks).
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
