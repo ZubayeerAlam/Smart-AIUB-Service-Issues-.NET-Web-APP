@@ -10,6 +10,11 @@ namespace Smart_AIUB_Service_Issue.Controllers
     {
         public IActionResult Index()
         {
+            // Logged-in users go straight to their own dashboard; visitors see the welcome page.
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
             return View();
         }
 

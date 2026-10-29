@@ -13,9 +13,9 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | M3 — Master data & user management | ✅ (committed `2418627`; your Admin browser check still open) |
 | M4 — Issue reporting | ✅ (committed `ab06373`) |
 | M5 — Review, workflow, history, comments | ✅ (committed `06b8eb0`; your Admin/Staff browser check open) |
-| M6 — Assets & maintenance | ✅ (not committed yet) |
-| M7 — Dashboards | ⬜ **← NEXT** |
-| M8 — Search, filters & reports | ⬜ |
+| M6 — Assets & maintenance | ✅ (committed `e8d9ff1`) |
+| M7 — Dashboards | ✅ (not committed yet) |
+| M8 — Search, filters & reports | ⬜ **← NEXT** |
 | M9 — Hardening & docs | ⬜ |
 
 ---
@@ -113,12 +113,21 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 - [x] Tests: **106/106 passed** (18 new: unique tag, room/building mismatch, inactive type, warranty date, same-room link rule, who may link, maintenance saves + updates status, unlinked issue refused, future date refused, asset pages' policies)
 - [x] Browser check (student): issue form room picker still works · Assets / Asset types / Maintenance → Access denied · issue page shows "Asset: Not linked"
 - [ ] **You:** as Admin add an asset in D-Building room 301, then on ISS-000001 (once assigned) link it and log maintenance
-- [ ] Commit M6
+- [x] Commit M6 (`e8d9ff1`)
 
-## ⬜ M7 — Dashboards ← NEXT
-- [ ] Reporter, Support Staff and Admin dashboards
+## ✅ M7 — Dashboards
+- [x] One URL `/Dashboard` shows the right dashboard for the user's role; logged-in users opening `/` go there; navbar "Dashboard"
+- [x] **Reporter:** tiles Waiting for review · Being fixed · Please confirm · Closed; "Please confirm these fixes" list; latest 5 issues
+- [x] **Support staff:** team name; tiles Assigned to me · Unassigned in team · On hold · Resolved (30 days); my work sorted most urgent first; team issues waiting for a technician
+- [x] **Admin:** tiles Waiting for review · Being worked on · High & critical · Closed (30 days) · Assets needing care; bar charts by priority / team / category / building (CSS only, no chart library); oldest in review queue; recently resolved
+- [x] Tiles and bars link to the matching filtered list
+- [x] `DashboardService`: every number is a SQL COUNT / GROUP BY, lists take 5 rows
+- [x] Tests: **109/109 passed** (3 new: reporter sees only own counts, staff sees own team only, admin counts and groups)
+- [x] Browser check (student): `/` → dashboard with correct numbers · tile link opens filtered list · phone layout 2×2 tiles, no sideways scroll
+- [ ] **You:** open the dashboard as Admin and as Support Staff
+- [ ] Commit M7
 
-## ⬜ M8 — Search, filters & reports
+## ⬜ M8 — Search, filters & reports ← NEXT
 - [ ] Filters on all lists
 - [ ] Date-range reports: issues, resolution time, maintenance cost
 - [ ] Tests: date boundaries (UTC ↔ Asia/Dhaka)
@@ -140,3 +149,4 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | 2026-10-29 | M4 implemented: issue reporting, lists, details, edit/cancel, resource-based authorization, tests (60/60) |
 | 2026-10-29 | M5 implemented: full workflow, review queue, team queue, comments with internal notes, tests (88/88) |
 | 2026-10-29 | M6 implemented: asset types, asset registry, issue→asset link (same room), maintenance records, tests (106/106) |
+| 2026-10-29 | M7 implemented: reporter, support staff and admin dashboards, tests (109/109) |

@@ -32,7 +32,14 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto ms-lg-4">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                            }
+                            else
+                            {
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
+                            }
                         </li>
                         @if (User.IsInRole(Roles.Admin))
                         {

@@ -1,0 +1,25 @@
+@model IEnumerable<StatTile>
+@* Row of number tiles. A tile with a Url is a link to the matching filtered list. *@
+<div class="row g-3 mb-4">
+    @foreach (var tile in Model)
+    {
+        <div class="col-6 col-lg">
+            @if (tile.Url is not null)
+            {
+                <a href="@Url.Content("~" + tile.Url)" class="sc-tile sc-tile-@tile.Tone sc-tile-link">
+                    <div class="sc-tile-value">@tile.Value</div>
+                    <div class="sc-tile-label">@tile.Label</div>
+                    <div class="sc-tile-hint">@tile.Hint</div>
+                </a>
+            }
+            else
+            {
+                <div class="sc-tile sc-tile-@tile.Tone">
+                    <div class="sc-tile-value">@tile.Value</div>
+                    <div class="sc-tile-label">@tile.Label</div>
+                    <div class="sc-tile-hint">@tile.Hint</div>
+                </div>
+            }
+        </div>
+    }
+</div>

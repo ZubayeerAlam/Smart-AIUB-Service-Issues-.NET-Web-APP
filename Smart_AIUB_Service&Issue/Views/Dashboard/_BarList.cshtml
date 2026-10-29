@@ -1,0 +1,34 @@
+@model BarList
+@* Simple horizontal bar chart made with CSS widths (no chart library needed). *@
+<div class="sc-panel h-100">
+    <h2 class="sc-panel-title">@Model.Title</h2>
+    @if (Model.Items.Count == 0 || Model.Max == 0)
+    {
+        <p class="small text-muted mb-0">Nothing open right now.</p>
+    }
+    else
+    {
+        <ul class="sc-bars">
+            @foreach (var item in Model.Items)
+            {
+                var percent = Model.Max == 0 ? 0 : Math.Max(item.Count == 0 ? 0 : 4, item.Count * 100 / Model.Max);
+                <li>
+                    <div class="d-flex justify-content-between small mb-1">
+                        @if (item.Url is not null)
+                        {
+                            <a href="@Url.Content("~" + item.Url)" class="text-reset text-decoration-none">@item.Label</a>
+                        }
+                        else
+                        {
+                            <span>@item.Label</span>
+                        }
+                        <span class="fw-semibold">@item.Count</span>
+                    </div>
+                    <div class="sc-bar-track" role="presentation">
+                        <div class="sc-bar" style="width: @(percent)%"></div>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
+</div>

@@ -70,6 +70,7 @@ builder.Services.AddScoped<IIssueWorkflowService, IssueWorkflowService>();
 builder.Services.AddScoped<IAssetTypeService, AssetTypeService>();
 builder.Services.AddScoped<IAssetService, AssetService>();
 builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Resource-based authorization for single issues (see IssueAuthorizationHandler).
 builder.Services.AddScoped<IAuthorizationHandler, IssueAuthorizationHandler>();

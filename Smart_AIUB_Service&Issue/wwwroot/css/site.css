@@ -732,3 +732,94 @@ body {
   border-color: var(--sc-blue);
   color: #fff;
 }
+
+/* ---------- Dashboards (M7) ---------- */
+
+.sc-tile {
+  display: block;
+  height: 100%;
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-left: 4px solid var(--tile-color, var(--sc-blue));
+  border-radius: var(--sc-radius);
+  padding: 1rem 1.1rem;
+  color: var(--sc-text);
+  text-decoration: none;
+}
+
+.sc-tile-link {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sc-tile-link:hover {
+  color: var(--sc-text);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(11, 37, 69, 0.08);
+}
+
+.sc-tile-value {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--tile-color, var(--sc-blue));
+}
+
+.sc-tile-label {
+  font-weight: 700;
+  margin-top: 0.15rem;
+}
+
+.sc-tile-hint {
+  font-size: 0.8rem;
+  color: var(--sc-muted);
+}
+
+.sc-tile-blue   { --tile-color: var(--sc-blue); }
+.sc-tile-indigo { --tile-color: #4338ca; }
+.sc-tile-green  { --tile-color: #15803d; }
+.sc-tile-amber  { --tile-color: #b45309; }
+.sc-tile-red    { --tile-color: #b42318; }
+
+.sc-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sc-bars li + li {
+  margin-top: 0.7rem;
+}
+
+.sc-bar-track {
+  height: 0.5rem;
+  background: #eef1f6;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.sc-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sc-blue), var(--sc-sky));
+  border-radius: 1rem;
+}
+
+.sc-mini-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sc-mini-list li {
+  position: relative; /* lets the whole row be clickable (stretched-link) */
+  padding: 0.7rem 0.6rem;
+  margin: 0 -0.6rem;
+  border-radius: 0.6rem;
+}
+
+.sc-mini-list li + li {
+  border-top: 1px solid #eef1f6;
+}
+
+.sc-mini-list li:hover {
+  background: #f7f9fd;
+}

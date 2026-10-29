@@ -1,0 +1,28 @@
+@model MiniListModel
+@* Short issue list for dashboard panels; the whole row is clickable. *@
+@if (Model.Items.Count == 0)
+{
+    <p class="small text-muted mb-0">@Model.EmptyText</p>
+}
+else
+{
+    <ul class="sc-mini-list">
+        @foreach (var i in Model.Items)
+        {
+            <li>
+                <a asp-controller="Issues" asp-action="Details" asp-route-id="@i.Id" class="stretched-link" aria-label="@i.TicketNumber @i.Title"></a>
+                <div class="d-flex justify-content-between gap-2">
+                    <span class="fw-semibold text-truncate">@i.Title</span>
+                    <partial name="_StatusBadge" model="i.Status" />
+                </div>
+                <div class="small text-muted d-flex flex-wrap gap-1 align-items-center">
+                    <span>@i.TicketNumber · @i.BuildingName, Room @i.RoomNumber · @i.CreatedAt.ToDisplayDate()</span>
+                    @if (i.Priority is not null)
+                    {
+                        <span class="sc-badge @i.Priority.Value.BadgeClass() ms-1">@i.Priority</span>
+                    }
+                </div>
+            </li>
+        }
+    </ul>
+}

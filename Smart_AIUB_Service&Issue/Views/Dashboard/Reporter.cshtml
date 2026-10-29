@@ -1,0 +1,38 @@
+@model ReporterDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var toConfirm = new MiniListModel(Model.NeedsConfirmation, "");
+    var recent = new MiniListModel(Model.Recent, "You haven't reported anything yet. Spotted a problem on campus? Report it!");
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Hello, @Model.FullName 👋</h1>
+        <p>Here's what's happening with the issues you reported.</p>
+    </div>
+    <a asp-controller="Issues" asp-action="Report" class="btn btn-primary">+ Report an issue</a>
+</div>
+
+<partial name="_Tiles" model="Model.Tiles" />
+
+<div class="row g-4">
+    @if (Model.NeedsConfirmation.Count > 0)
+    {
+        <div class="col-12">
+            <div class="sc-panel sc-panel-action">
+                <h2 class="sc-panel-title">Please confirm these fixes</h2>
+                <p class="small text-muted">Open each one and press "It's fixed", or reopen it if the problem is still there.</p>
+                <partial name="_MiniList" model="toConfirm" />
+            </div>
+        </div>
+    }
+    <div class="col-12">
+        <div class="sc-panel">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <h2 class="sc-panel-title">Your latest issues</h2>
+                <a asp-controller="Issues" asp-action="Index" class="small">See all</a>
+            </div>
+            <partial name="_MiniList" model="recent" />
+        </div>
+    </div>
+</div>

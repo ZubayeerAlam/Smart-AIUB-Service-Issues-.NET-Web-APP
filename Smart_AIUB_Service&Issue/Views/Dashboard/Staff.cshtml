@@ -1,0 +1,37 @@
+@model StaffDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var myWork = new MiniListModel(Model.MyActive, "Nothing assigned to you. Take an issue from the team queue.");
+    var unassigned = new MiniListModel(Model.Unassigned, "No unassigned issues in your team. 🎉");
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Hello, @Model.FullName 👋</h1>
+        <p>@(Model.TeamName is null ? "You are not in a support team yet. Ask an admin to add you to one." : $"Your team: {Model.TeamName}")</p>
+    </div>
+    <a asp-controller="Issues" asp-action="Team" asp-route-scope="@TeamQueueScope.Mine" class="btn btn-primary">Open team queue</a>
+</div>
+
+<partial name="_Tiles" model="Model.Tiles" />
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="sc-panel h-100">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <h2 class="sc-panel-title">My work (most urgent first)</h2>
+                <a asp-controller="Issues" asp-action="Team" asp-route-scope="@TeamQueueScope.Mine" class="small">See all</a>
+            </div>
+            <partial name="_MiniList" model="myWork" />
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="sc-panel h-100">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <h2 class="sc-panel-title">Waiting for a technician</h2>
+                <a asp-controller="Issues" asp-action="Team" asp-route-scope="@TeamQueueScope.Unassigned" class="small">See all</a>
+            </div>
+            <partial name="_MiniList" model="unassigned" />
+        </div>
+    </div>
+</div>

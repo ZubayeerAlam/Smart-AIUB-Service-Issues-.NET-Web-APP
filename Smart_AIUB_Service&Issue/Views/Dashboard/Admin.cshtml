@@ -1,0 +1,44 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var oldest = new MiniListModel(Model.OldestWaiting, "Review queue is empty. 🎉");
+    var resolved = new MiniListModel(Model.RecentlyResolved, "Nothing resolved yet.");
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Campus overview</h1>
+        <p>All issues and equipment at a glance. Click a tile or bar to see the list behind it.</p>
+    </div>
+    <a asp-controller="IssueReview" asp-action="Index" class="btn btn-primary">Review queue</a>
+</div>
+
+<partial name="_Tiles" model="Model.Tiles" />
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3"><partial name="_BarList" model="Model.ByPriority" /></div>
+    <div class="col-md-6 col-xl-3"><partial name="_BarList" model="Model.ByTeam" /></div>
+    <div class="col-md-6 col-xl-3"><partial name="_BarList" model="Model.ByCategory" /></div>
+    <div class="col-md-6 col-xl-3"><partial name="_BarList" model="Model.ByBuilding" /></div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="sc-panel h-100">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <h2 class="sc-panel-title">Waiting longest for review</h2>
+                <a asp-controller="IssueReview" asp-action="Index" class="small">Review queue</a>
+            </div>
+            <partial name="_MiniList" model="oldest" />
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="sc-panel h-100">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <h2 class="sc-panel-title">Recently resolved</h2>
+                <a asp-controller="IssueReview" asp-action="All" asp-route-status="Resolved" class="small">See all</a>
+            </div>
+            <partial name="_MiniList" model="resolved" />
+        </div>
+    </div>
+</div>

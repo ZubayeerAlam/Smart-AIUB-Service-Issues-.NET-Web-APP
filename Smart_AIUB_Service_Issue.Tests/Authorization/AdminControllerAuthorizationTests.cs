@@ -64,7 +64,7 @@ public class AdminControllerAuthorizationTests
         // authorization tests (IssuesController: see IssueAuthorizationTests).
         var allowedNonAdmin = new[]
         {
-            typeof(HomeController), typeof(AccountController), typeof(IssuesController),
+            typeof(HomeController), typeof(AccountController), typeof(IssuesController), typeof(DashboardController),
             typeof(AssetsController), typeof(MaintenanceController) // see the StaffOrAdmin tests below
         };
 

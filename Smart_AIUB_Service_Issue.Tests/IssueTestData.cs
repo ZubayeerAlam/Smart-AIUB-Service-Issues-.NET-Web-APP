@@ -49,6 +49,7 @@ public sealed class IssueTestData : IAsyncDisposable
             s.AddScoped<IAssetTypeService, AssetTypeService>();
             s.AddScoped<IAssetService, AssetService>();
             s.AddScoped<IMaintenanceService, MaintenanceService>();
+            s.AddScoped<IDashboardService, DashboardService>();
         });
 
         var data = new IssueTestData(services);
