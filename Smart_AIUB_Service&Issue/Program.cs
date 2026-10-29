@@ -62,6 +62,12 @@ builder.Services.AddScoped<IRoomService, RoomService>();
 builder.Services.AddScoped<ISupportTeamService, SupportTeamService>();
 builder.Services.AddScoped<IIssueCategoryService, IssueCategoryService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IIssueActorService, IssueActorService>();
+builder.Services.AddScoped<IIssueService, IssueService>();
+builder.Services.AddScoped<IIssueWorkflowService, IssueWorkflowService>();
+
+// Resource-based authorization for single issues (see IssueAuthorizationHandler).
+builder.Services.AddScoped<IAuthorizationHandler, IssueAuthorizationHandler>();
 
 builder.Services.AddControllersWithViews(options =>
 {

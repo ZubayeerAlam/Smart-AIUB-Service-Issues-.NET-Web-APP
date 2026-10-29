@@ -16,6 +16,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
     }
 
+    /// <summary>Lets the test project subclass this context (for SQLite tweaks).</summary>
+    protected ApplicationDbContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+
     public DbSet<Department> Departments => Set<Department>();
     public DbSet<Building> Buildings => Set<Building>();
     public DbSet<Room> Rooms => Set<Room>();

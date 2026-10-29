@@ -15,7 +15,7 @@
 *@
 <body class="d-flex flex-column min-vh-100">
     <header>
-        <nav class="navbar navbar-expand-md navbar-dark sc-navbar">
+        <nav class="navbar navbar-expand-lg navbar-dark sc-navbar">
             <div class="container">
                 <a class="sc-brand" asp-controller="Home" asp-action="Index">
                     <span class="sc-brand-mark" aria-hidden="true">
@@ -30,10 +30,16 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
-                    <ul class="navbar-nav me-auto ms-md-4">
+                    <ul class="navbar-nav me-auto ms-lg-4">
                         <li class="nav-item">
                             <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Report">Report issue</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Index">My issues</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Open">Open issues</a></li>
+                        }
                         @if (User.IsInRole(Roles.Admin))
                         {
                             <li class="nav-item dropdown">

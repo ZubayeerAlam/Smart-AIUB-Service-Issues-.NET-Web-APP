@@ -1,0 +1,119 @@
+@model IssueFormViewModel
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Report an issue" : "Edit issue";
+}
+
+<div class="sc-form-wrap">
+    @if (isNew)
+    {
+        <a asp-action="Index" class="sc-back">&larr; My issues</a>
+    }
+    else
+    {
+        <a asp-action="Details" asp-route-id="@Model.Id" class="sc-back">&larr; Back to issue</a>
+    }
+
+    <div class="sc-form-card">
+        <h1 class="h3 mb-1">@ViewData["Title"]</h1>
+        <p class="text-muted mb-4">
+            @if (isNew)
+            {
+                <text>Tell us what's wrong and where. It takes less than a minute.</text>
+            }
+            else
+            {
+                <text>You can edit until an admin reviews the issue.</text>
+            }
+        </p>
+
+        <form asp-action="@(isNew ? "Report" : "Edit")" asp-route-id="@(isNew ? null : Model.Id)" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="mb-3" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="CategoryId" class="form-label"></label>
+                <select asp-for="CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+                    <option value="">-- What kind of problem? --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="BuildingId" class="form-label"></label>
+                    <select asp-for="BuildingId" asp-items="Model.BuildingOptions" class="form-select" data-rooms-url="@Url.Action("Rooms")">
+                        <option value="">-- Select building --</option>
+                    </select>
+                    <span asp-validation-for="BuildingId" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="RoomId" class="form-label"></label>
+                    <select asp-for="RoomId" asp-items="Model.RoomOptions" class="form-select" disabled="@(Model.BuildingId is null)">
+                        <option value="">@(Model.BuildingId is null ? "-- Select a building first --" : "-- Select room --")</option>
+                    </select>
+                    <span asp-validation-for="RoomId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Title" class="form-label"></label>
+                <input asp-for="Title" class="form-control" placeholder="e.g. Projector not turning on" />
+                <span asp-validation-for="Title" class="text-danger small"></span>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="5"
+                          placeholder="What happened? Since when? Anything the technician should know?"></textarea>
+                <span asp-validation-for="Description" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">@(isNew ? "Submit issue" : "Save changes")</button>
+                @if (isNew)
+                {
+                    <a asp-action="Index" class="btn btn-light">Cancel</a>
+                }
+                else
+                {
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light">Cancel</a>
+                }
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Cascading dropdown: when the building changes, load its rooms from /Issues/Rooms.
+        (function () {
+            const building = document.getElementById("BuildingId");
+            const room = document.getElementById("RoomId");
+
+            function setRooms(rooms, placeholder) {
+                room.innerHTML = "";
+                room.add(new Option(placeholder, ""));
+                rooms.forEach(r => room.add(new Option(r.text, r.id)));
+                room.disabled = !building.value;
+            }
+
+            building.addEventListener("change", async function () {
+                if (!building.value) {
+                    setRooms([], "-- Select a building first --");
+                    return;
+                }
+                setRooms([], "Loading rooms…");
+                room.disabled = true;
+                try {
+                    const url = building.dataset.roomsUrl + "?buildingId=" + encodeURIComponent(building.value);
+                    const response = await fetch(url, { headers: { "Accept": "application/json" } });
+                    const rooms = await response.json();
+                    setRooms(rooms, rooms.length ? "-- Select room --" : "No rooms in this building");
+                } catch {
+                    setRooms([], "Could not load rooms. Please try again.");
+                }
+            });
+        })();
+    </script>
+}

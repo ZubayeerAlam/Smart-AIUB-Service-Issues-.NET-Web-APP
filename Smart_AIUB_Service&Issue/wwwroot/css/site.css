@@ -115,6 +115,7 @@ body {
 }
 
 .sc-brand-text {
+  white-space: nowrap;
   font-weight: 800;
   font-size: 1.2rem;
   letter-spacing: -0.02em;
@@ -572,4 +573,109 @@ body {
 .page-item.active .page-link {
   background: var(--sc-blue);
   border-color: var(--sc-blue);
+}
+
+/* ---------- Issues ---------- */
+
+/* Status colours: one per lifecycle step */
+.sc-st-submitted { background: #eef2ff; color: #4338ca; }
+.sc-st-assigned  { background: #e0f2fe; color: #0369a1; }
+.sc-st-progress  { background: var(--sc-blue-soft); color: var(--sc-blue); }
+.sc-st-hold      { background: #fff4e0; color: #b45309; }
+.sc-st-resolved  { background: #e7f8ee; color: #15803d; }
+.sc-st-closed    { background: #eef1f6; color: #475569; }
+.sc-st-stopped   { background: #fdecec; color: #b42318; }
+
+.sc-issue-card {
+  position: relative;
+  padding: 1rem;
+  border-bottom: 1px solid #eef1f6;
+}
+
+.sc-issue-card:last-child {
+  border-bottom: 0;
+}
+
+.sc-issue-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sc-issue-header h1 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  margin: 0.2rem 0 0.6rem;
+}
+
+.sc-panel {
+  background: #fff;
+  border: 1px solid #e5e9f0;
+  border-radius: var(--sc-radius);
+  padding: 1.25rem 1.4rem;
+}
+
+.sc-panel-success {
+  border-color: #bbe5c8;
+  background: #f4fbf6;
+}
+
+.sc-panel-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--sc-muted);
+  margin-bottom: 0.75rem;
+}
+
+/* Keep the line breaks people typed in descriptions/notes */
+.sc-pre {
+  white-space: pre-line;
+}
+
+.sc-dl dt {
+  font-size: 0.8rem;
+  color: var(--sc-muted);
+  font-weight: 600;
+}
+
+.sc-dl dd {
+  margin-bottom: 0.85rem;
+}
+
+.sc-dl dd:last-child {
+  margin-bottom: 0;
+}
+
+.sc-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 1.1rem;
+  border-left: 2px solid #e5e9f0;
+}
+
+.sc-timeline li {
+  position: relative;
+  padding: 0 0 1rem 0.4rem;
+}
+
+.sc-timeline li:last-child {
+  padding-bottom: 0;
+}
+
+.sc-timeline li::before {
+  content: "";
+  position: absolute;
+  left: -1.55rem;
+  top: 0.3rem;
+  width: 0.8rem;
+  height: 0.8rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid var(--sc-blue);
 }

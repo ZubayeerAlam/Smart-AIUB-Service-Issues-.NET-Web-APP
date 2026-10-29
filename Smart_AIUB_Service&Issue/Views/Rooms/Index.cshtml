@@ -23,7 +23,7 @@
         <label for="search" class="form-label">Room number or name</label>
         <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="e.g. 301" />
     </div>
-    <div class="col-7 col-md-2">
+    <div class="col-12 col-md-2">
         <label for="status" class="form-label">Status</label>
         <select id="status" name="status" class="form-select">
             <option value="" selected="@(string.IsNullOrEmpty(Model.Status))">All</option>
@@ -31,7 +31,7 @@
             <option value="@StatusFilter.Inactive" selected="@(Model.Status == StatusFilter.Inactive)">Inactive</option>
         </select>
     </div>
-    <div class="col-5 col-md-auto d-flex gap-2">
+    <div class="col-12 col-md-auto d-flex gap-2">
         <button type="submit" class="btn btn-primary flex-fill">Filter</button>
         <a asp-action="Index" class="btn btn-light flex-fill">Reset</a>
     </div>

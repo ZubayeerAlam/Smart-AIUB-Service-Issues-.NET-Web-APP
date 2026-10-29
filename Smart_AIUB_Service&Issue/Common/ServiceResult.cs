@@ -8,11 +8,11 @@ namespace Smart_AIUB_Service_Issue.Common;
 /// </summary>
 public class ServiceResult
 {
-    public bool Succeeded { get; private init; }
-    public string? Error { get; private init; }
+    public bool Succeeded { get; protected init; }
+    public string? Error { get; protected init; }
 
     /// <summary>Name of the form field the error belongs to; null = whole form.</summary>
-    public string? Field { get; private init; }
+    public string? Field { get; protected init; }
 
     public static ServiceResult Success() => new() { Succeeded = true };
 
@@ -23,4 +23,15 @@ public class ServiceResult
         result.Succeeded
             ? Success()
             : Fail(string.Join(" ", result.Errors.Select(e => e.Description)));
+}
+
+/// <summary>A ServiceResult that also returns a value on success (e.g. the new issue's Id).</summary>
+public class ServiceResult<T> : ServiceResult
+{
+    public T? Value { get; private init; }
+
+    public static ServiceResult<T> Success(T value) => new() { Succeeded = true, Value = value };
+
+    public static new ServiceResult<T> Fail(string error, string? field = null) =>
+        new() { Error = error, Field = field };
 }

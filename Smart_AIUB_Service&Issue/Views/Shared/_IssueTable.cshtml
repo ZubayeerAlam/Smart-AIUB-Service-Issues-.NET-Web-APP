@@ -1,0 +1,84 @@
+@model PagedResult<IssueListItem>
+@*
+    Shared issue list. Phones get stacked cards; tablets and up get a table.
+    ViewData["EmptyText"] sets the "nothing here" message.
+    ViewData["LinkToDetails"] = false shows rows without links (public list).
+*@
+@{
+    var linkToDetails = ViewData["LinkToDetails"] as bool? ?? true;
+    var showReporter = Model.Items.Any(i => i.ReporterName is not null);
+}
+
+<div class="sc-table-card">
+    @if (Model.Items.Count == 0)
+    {
+        <div class="sc-empty">@(ViewData["EmptyText"] ?? "No issues found.")</div>
+    }
+    else
+    {
+        @* Phones *@
+        <div class="d-md-none">
+            @foreach (var i in Model.Items)
+            {
+                <div class="sc-issue-card">
+                    <div class="d-flex justify-content-between gap-2">
+                        <div class="small text-muted">@i.TicketNumber · @i.CategoryName</div>
+                        <partial name="_StatusBadge" model="i.Status" />
+                    </div>
+                    <div class="fw-semibold my-1">
+                        @if (linkToDetails)
+                        {
+                            <a asp-controller="Issues" asp-action="Details" asp-route-id="@i.Id" class="stretched-link text-reset text-decoration-none">@i.Title</a>
+                        }
+                        else
+                        {
+                            @i.Title
+                        }
+                    </div>
+                    <div class="small text-muted">@i.BuildingName · Room @i.RoomNumber · @i.CreatedAt.ToDisplayDate()</div>
+                </div>
+            }
+        </div>
+
+        @* Tablets and desktops *@
+        <div class="table-responsive d-none d-md-block">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Ticket</th>
+                        <th>Title</th>
+                        <th>Location</th>
+                        @if (showReporter) { <th>Reported by</th> }
+                        <th>Status</th>
+                        <th>Reported</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var i in Model.Items)
+                    {
+                        <tr>
+                            <td class="text-nowrap text-muted small">@i.TicketNumber</td>
+                            <td>
+                                @if (linkToDetails)
+                                {
+                                    <a asp-controller="Issues" asp-action="Details" asp-route-id="@i.Id" class="fw-semibold text-decoration-none">@i.Title</a>
+                                }
+                                else
+                                {
+                                    <span class="fw-semibold">@i.Title</span>
+                                }
+                                <div class="small text-muted">@i.CategoryName</div>
+                            </td>
+                            <td>@i.BuildingName <span class="text-muted small">· Room @i.RoomNumber</span></td>
+                            @if (showReporter) { <td>@i.ReporterName</td> }
+                            <td><partial name="_StatusBadge" model="i.Status" /></td>
+                            <td class="text-nowrap small text-muted">@i.CreatedAt.ToDisplayDate()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_Pagination" model="Model" />

@@ -1,0 +1,16 @@
+@model IssueListViewModel
+@{
+    ViewData["Title"] = "My issues";
+    ViewData["EmptyText"] = "You haven't reported any issues yet.";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>My issues</h1>
+        <p>Everything you have reported, newest first.</p>
+    </div>
+    <a asp-action="Report" class="btn btn-primary">+ Report an issue</a>
+</div>
+
+<partial name="_IssueFilter" model="Model" />
+<partial name="_IssueTable" model="Model.Results" view-data="ViewData" />

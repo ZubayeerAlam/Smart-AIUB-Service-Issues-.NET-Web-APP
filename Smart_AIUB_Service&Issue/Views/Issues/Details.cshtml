@@ -1,0 +1,104 @@
+@model IssueDetailsViewModel
+@{
+    ViewData["Title"] = Model.TicketNumber;
+}
+
+<a asp-action="@(Model.IsReporter ? "Index" : "Open")" class="sc-back">&larr; @(Model.IsReporter ? "My issues" : "Open issues")</a>
+
+<div class="sc-issue-header">
+    <div>
+        <div class="text-muted small fw-semibold">@Model.TicketNumber · @Model.CategoryName</div>
+        <h1>@Model.Title</h1>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <partial name="_StatusBadge" model="Model.Status" />
+            @if (Model.Priority is not null)
+            {
+                <span class="sc-badge sc-badge-muted">Priority: @Model.Priority</span>
+            }
+            <span class="text-muted small">Reported @Model.CreatedAt.ToDisplay()</span>
+        </div>
+    </div>
+
+    @if (Model.CanEdit || Model.CanCancel)
+    {
+        <div class="d-flex gap-2 flex-wrap">
+            @if (Model.CanEdit)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Edit</a>
+            }
+            @if (Model.CanCancel)
+            {
+                <button type="button" class="btn btn-outline-danger" data-bs-toggle="collapse" data-bs-target="#cancelForm">Cancel issue</button>
+            }
+        </div>
+    }
+</div>
+
+@if (Model.CanCancel)
+{
+    <div class="collapse" id="cancelForm">
+        <form asp-action="Cancel" asp-route-id="@Model.Id" method="post" class="sc-panel mb-3"
+              data-confirm="Cancel this issue? This cannot be undone.">
+            <label for="Reason" class="form-label">Why are you cancelling? (optional)</label>
+            <input id="Reason" name="Reason" class="form-control mb-2" maxlength="500" placeholder="e.g. It works again" />
+            <button type="submit" class="btn btn-danger">Yes, cancel this issue</button>
+        </form>
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="sc-panel mb-4">
+            <h2 class="sc-panel-title">Description</h2>
+            <p class="mb-0 sc-pre">@Model.Description</p>
+        </div>
+
+        @if (Model.ResolutionNote is not null)
+        {
+            <div class="sc-panel sc-panel-success mb-4">
+                <h2 class="sc-panel-title">Resolution</h2>
+                <p class="mb-0 sc-pre">@Model.ResolutionNote</p>
+            </div>
+        }
+
+        <div class="sc-panel">
+            <h2 class="sc-panel-title">Timeline</h2>
+            <ol class="sc-timeline">
+                @foreach (var h in Model.History)
+                {
+                    <li>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <partial name="_StatusBadge" model="h.ToStatus" />
+                            <span class="small text-muted">@h.ChangedAt.ToDisplay() · @h.ChangedByName</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(h.Note))
+                        {
+                            <div class="small mt-1">@h.Note</div>
+                        }
+                    </li>
+                }
+            </ol>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="sc-panel">
+            <h2 class="sc-panel-title">Details</h2>
+            <dl class="sc-dl mb-0">
+                <dt>Location</dt>
+                <dd>
+                    @Model.BuildingName<br />
+                    <span class="text-muted">@IssueDisplay.FloorName(Model.Floor) · Room @Model.RoomNumber@(Model.RoomName is null ? "" : " · " + Model.RoomName)</span>
+                </dd>
+                <dt>Reported by</dt>
+                <dd>@Model.ReporterName<br /><span class="text-muted small">@Model.ReporterEmail</span></dd>
+                <dt>Support team</dt>
+                <dd>@(Model.TeamName ?? "Not assigned yet")</dd>
+                <dt>Technician</dt>
+                <dd>@(Model.StaffName ?? "—")</dd>
+                <dt>Last updated</dt>
+                <dd>@Model.UpdatedAt.ToDisplay()</dd>
+            </dl>
+        </div>
+    </div>
+</div>

@@ -56,11 +56,11 @@ public class AdminControllerAuthorizationTests
     }
 
     [Fact]
-    public void Every_controller_except_Home_and_Account_is_an_admin_controller_for_now()
+    public void Every_non_admin_controller_is_listed_on_purpose()
     {
-        // When later milestones add controllers for other roles, add them to this list
-        // and give them their own authorization tests.
-        var allowedNonAdmin = new[] { typeof(HomeController), typeof(AccountController) };
+        // Controllers open to other roles must be added here on purpose, with their own
+        // authorization tests (IssuesController: see IssueAuthorizationTests).
+        var allowedNonAdmin = new[] { typeof(HomeController), typeof(AccountController), typeof(IssuesController) };
 
         var unexpected = typeof(AdminControllerBase).Assembly.GetTypes()
             .Where(t => typeof(Controller).IsAssignableFrom(t) && !t.IsAbstract)

@@ -4,13 +4,13 @@
     Right side of the navbar. The role badge is only a display; real access
     checks happen on the server with [Authorize] / policies.
 *@
-<ul class="navbar-nav align-items-md-center gap-md-2 mt-2 mt-md-0">
+<ul class="navbar-nav align-items-lg-center gap-lg-2 mt-2 mt-lg-0">
     @if (User.Identity?.IsAuthenticated == true)
     {
         var name = User.Identity.Name ?? "";
         var role = Roles.All.FirstOrDefault(r => User.IsInRole(r));
 
-        <li class="nav-item d-flex align-items-center gap-2 py-2 py-md-0">
+        <li class="nav-item d-flex align-items-center gap-2 py-2 py-lg-0">
             <span class="sc-avatar" aria-hidden="true">@(name.Length > 0 ? name[0] : '?')</span>
             <span class="text-white small text-truncate" style="max-width: 14rem;">@name</span>
             @if (role is not null)
@@ -30,7 +30,7 @@
             <a class="nav-link" asp-controller="Account" asp-action="Login">Log in</a>
         </li>
         <li class="nav-item">
-            <a class="btn btn-sm btn-primary w-100 mt-1 mt-md-0" asp-controller="Account" asp-action="Register">Register</a>
+            <a class="btn btn-sm btn-primary w-100 mt-1 mt-lg-0" asp-controller="Account" asp-action="Register">Register</a>
         </li>
     }
 </ul>

@@ -1,0 +1,27 @@
+@model IssueListViewModel
+@{
+    // The public list only shows open issues, so final statuses are not offered there.
+    var statuses = ViewData["OpenOnly"] is true
+        ? Enum.GetValues<IssueStatus>().Where(s => !s.IsFinal())
+        : Enum.GetValues<IssueStatus>();
+}
+<form method="get" class="sc-filter row g-2 align-items-end">
+    <div class="col-12 col-md">
+        <label for="search" class="form-label">Search</label>
+        <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Title, room, building or ticket no." />
+    </div>
+    <div class="col-12 col-md-3">
+        <label for="status" class="form-label">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="">All statuses</option>
+            @foreach (var s in statuses)
+            {
+                <option value="@s" selected="@(Model.Status == s)">@s.DisplayName()</option>
+            }
+        </select>
+    </div>
+    <div class="col-12 col-md-auto d-flex gap-2">
+        <button type="submit" class="btn btn-primary flex-fill">Filter</button>
+        <a href="@Context.Request.Path" class="btn btn-light flex-fill">Reset</a>
+    </div>
+</form>

@@ -1,0 +1,18 @@
+@model IssueListViewModel
+@{
+    ViewData["Title"] = "Open issues";
+    ViewData["EmptyText"] = "No open issues right now. 🎉";
+    ViewData["OpenOnly"] = true;
+    ViewData["LinkToDetails"] = false; // other people's issues: summary only
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Open issues on campus</h1>
+        <p>Check here before reporting. If your problem is already listed, the team is on it.</p>
+    </div>
+    <a asp-action="Report" class="btn btn-primary">+ Report an issue</a>
+</div>
+
+<partial name="_IssueFilter" model="Model" view-data="ViewData" />
+<partial name="_IssueTable" model="Model.Results" view-data="ViewData" />
