@@ -1,0 +1,107 @@
+@model AssetFormViewModel
+@{
+    var isNew = Model.Id == 0;
+    ViewData["Title"] = isNew ? "Add asset" : "Edit asset";
+}
+
+<div class="sc-form-wrap">
+    @if (isNew)
+    {
+        <a asp-action="Index" class="sc-back">&larr; Assets</a>
+    }
+    else
+    {
+        <a asp-action="Details" asp-route-id="@Model.Id" class="sc-back">&larr; Back to asset</a>
+    }
+
+    <div class="sc-form-card">
+        <h1 class="h3 mb-4">@ViewData["Title"]</h1>
+
+        <form asp-action="@(isNew ? "Create" : "Edit")" asp-route-id="@(isNew ? null : Model.Id)" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="mb-3" role="alert"></div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-5">
+                    <label asp-for="AssetTag" class="form-label"></label>
+                    <input asp-for="AssetTag" class="form-control text-uppercase" placeholder="PRJ-D301" />
+                    <span asp-validation-for="AssetTag" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-7">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" placeholder="e.g. Epson EB-X51 projector" />
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="AssetTypeId" class="form-label"></label>
+                    <select asp-for="AssetTypeId" asp-items="Model.TypeOptions" class="form-select">
+                        <option value="">-- Select type --</option>
+                    </select>
+                    <span asp-validation-for="AssetTypeId" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="Status" class="form-label"></label>
+                    <select asp-for="Status" class="form-select">
+                        @foreach (var s in Enum.GetValues<AssetStatus>())
+                        {
+                            <option value="@s" selected="@(Model.Status == s)">@s.DisplayName()</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="BuildingId" class="form-label"></label>
+                    <select asp-for="BuildingId" asp-items="Model.BuildingOptions" class="form-select" data-rooms-url="@Url.Action("Rooms", "Issues")">
+                        <option value="">-- Select building --</option>
+                    </select>
+                    <span asp-validation-for="BuildingId" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="RoomId" class="form-label"></label>
+                    <select asp-for="RoomId" asp-items="Model.RoomOptions" class="form-select" disabled="@(Model.BuildingId is null)">
+                        <option value="">@(Model.BuildingId is null ? "-- Select a building first --" : "-- Select room --")</option>
+                    </select>
+                    <span asp-validation-for="RoomId" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-4">
+                    <label asp-for="SerialNumber" class="form-label"></label>
+                    <input asp-for="SerialNumber" class="form-control" />
+                    <span asp-validation-for="SerialNumber" class="text-danger small"></span>
+                </div>
+                <div class="col-6 col-sm-4">
+                    <label asp-for="PurchaseDate" class="form-label"></label>
+                    <input asp-for="PurchaseDate" type="date" class="form-control" />
+                    <span asp-validation-for="PurchaseDate" class="text-danger small"></span>
+                </div>
+                <div class="col-6 col-sm-4">
+                    <label asp-for="WarrantyExpiry" class="form-label"></label>
+                    <input asp-for="WarrantyExpiry" type="date" class="form-control" />
+                    <span asp-validation-for="WarrantyExpiry" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="Notes" class="form-label"></label>
+                <textarea asp-for="Notes" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="Notes" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a asp-action="Index" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/room-picker.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,72 @@
+@model MaintenanceFormViewModel
+@{
+    ViewData["Title"] = "Log maintenance";
+}
+
+<div class="sc-form-wrap">
+    <a asp-controller="Assets" asp-action="Details" asp-route-id="@Model.AssetId" class="sc-back">&larr; Back to asset</a>
+    <div class="sc-form-card">
+        <h1 class="h3 mb-1">Log maintenance</h1>
+        <p class="text-muted mb-4">@Model.AssetLabel</p>
+
+        <form asp-action="Create" method="post" novalidate>
+            <input type="hidden" asp-for="AssetId" />
+            <div asp-validation-summary="ModelOnly" class="mb-3" role="alert"></div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="Type" class="form-label"></label>
+                    <select asp-for="Type" asp-items="Html.GetEnumSelectList<MaintenanceType>()" class="form-select"></select>
+                    <div class="form-text">Corrective = repair · Preventive = planned servicing · Inspection = check-up</div>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="PerformedAtLocal" class="form-label"></label>
+                    <input asp-for="PerformedAtLocal" type="datetime-local" class="form-control" />
+                    <div class="form-text">Bangladesh time</div>
+                    <span asp-validation-for="PerformedAtLocal" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4" placeholder="What was checked, repaired or replaced?"></textarea>
+                <span asp-validation-for="Description" class="text-danger small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                    <label asp-for="Cost" class="form-label"></label>
+                    <input asp-for="Cost" type="number" step="0.01" min="0" class="form-control" placeholder="0.00" />
+                    <span asp-validation-for="Cost" class="text-danger small"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="AssetStatus" class="form-label"></label>
+                    <select asp-for="AssetStatus" class="form-select">
+                        @foreach (var s in Enum.GetValues<AssetStatus>())
+                        {
+                            <option value="@s" selected="@(Model.AssetStatus == s)">@s.DisplayName()</option>
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label asp-for="IssueId" class="form-label"></label>
+                <select asp-for="IssueId" asp-items="Model.IssueOptions" class="form-select">
+                    <option value="">-- None --</option>
+                </select>
+                <div class="form-text">Only issues linked to this asset are listed.</div>
+                <span asp-validation-for="IssueId" class="text-danger small"></span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Save record</button>
+                <a asp-controller="Assets" asp-action="Details" asp-route-id="@Model.AssetId" class="btn btn-light">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

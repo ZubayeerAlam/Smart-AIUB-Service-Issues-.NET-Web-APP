@@ -67,6 +67,9 @@ builder.Services.Configure<IssueOptions>(builder.Configuration.GetSection(IssueO
 builder.Services.AddScoped<IIssueActorService, IssueActorService>();
 builder.Services.AddScoped<IIssueService, IssueService>();
 builder.Services.AddScoped<IIssueWorkflowService, IssueWorkflowService>();
+builder.Services.AddScoped<IAssetTypeService, AssetTypeService>();
+builder.Services.AddScoped<IAssetService, AssetService>();
+builder.Services.AddScoped<IMaintenanceService, MaintenanceService>();
 
 // Resource-based authorization for single issues (see IssueAuthorizationHandler).
 builder.Services.AddScoped<IAuthorizationHandler, IssueAuthorizationHandler>();

@@ -16,4 +16,15 @@ public static class DhakaTime
 
     /// <summary>e.g. "29 Oct 2026"</summary>
     public static string ToDisplayDate(this DateTime utc) => utc.ToDhaka().ToString("d MMM yyyy");
+
+    /// <summary>Converts a Dhaka wall-clock time (e.g. typed in a form) to UTC for saving.</summary>
+    public static DateTime FromDhakaToUtc(DateTime dhakaLocal) =>
+        TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(dhakaLocal, DateTimeKind.Unspecified), Zone);
+
+    /// <summary>Current Bangladesh time, rounded to the minute (for form defaults).</summary>
+    public static DateTime NowInDhaka()
+    {
+        var now = DateTime.UtcNow.ToDhaka();
+        return new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, 0);
+    }
 }

@@ -7,6 +7,7 @@ using Smart_AIUB_Service_Issue.Common;
 using Smart_AIUB_Service_Issue.Models.Entities;
 using Smart_AIUB_Service_Issue.Models.Enums;
 using Smart_AIUB_Service_Issue.Services.Interfaces;
+using Smart_AIUB_Service_Issue.ViewModels.Assets;
 using Smart_AIUB_Service_Issue.ViewModels.Issues;
 
 namespace Smart_AIUB_Service_Issue.Controllers;
@@ -210,6 +211,11 @@ public class IssuesController : Controller
     [HttpPost]
     public Task<IActionResult> Reopen(int id, IssueNoteViewModel model) =>
         RunAsync(id, actor => _workflow.ReopenAsync(id, model.Note, actor), "Issue reopened and sent back to the support team.");
+
+    [HttpPost]
+    public Task<IActionResult> LinkAsset(int id, LinkAssetViewModel model) =>
+        RunAsync(id, actor => _issues.LinkAssetAsync(id, model.AssetId, actor),
+            model.AssetId is null ? "Asset link removed." : "Asset linked to this issue.");
 
     [HttpPost]
     public Task<IActionResult> Comment(int id, AddCommentViewModel model) =>

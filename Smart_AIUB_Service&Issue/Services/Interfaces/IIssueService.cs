@@ -46,6 +46,10 @@ public interface IIssueService
     /// <summary>Full details, comments and allowed actions. Call only after the View check passed.</summary>
     Task<IssueDetailsViewModel?> GetDetailsAsync(int id, IssueActor actor);
 
+    // Assets
+    /// <summary>Links the issue to an asset in the same room (or unlinks with null). Staff of the team or admin.</summary>
+    Task<ServiceResult> LinkAssetAsync(int issueId, int? assetId, IssueActor actor);
+
     // Comments
     /// <summary>Adds a comment. Internal notes are allowed for the assigned team's staff and admins only.</summary>
     Task<ServiceResult> AddCommentAsync(int issueId, AddCommentViewModel model, IssueActor actor);

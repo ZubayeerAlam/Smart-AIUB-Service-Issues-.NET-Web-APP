@@ -12,9 +12,9 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | M2 — Auth, roles & seed data | ✅ (committed) |
 | M3 — Master data & user management | ✅ (committed `2418627`; your Admin browser check still open) |
 | M4 — Issue reporting | ✅ (committed `ab06373`) |
-| M5 — Review, workflow, history, comments | ✅ (not committed yet; your Admin/Staff browser check open) |
-| M6 — Assets & maintenance | ⬜ **← NEXT** |
-| M7 — Dashboards | ⬜ |
+| M5 — Review, workflow, history, comments | ✅ (committed `06b8eb0`; your Admin/Staff browser check open) |
+| M6 — Assets & maintenance | ✅ (not committed yet) |
+| M7 — Dashboards | ⬜ **← NEXT** |
 | M8 — Search, filters & reports | ⬜ |
 | M9 — Hardening & docs | ⬜ |
 
@@ -100,14 +100,22 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 - [x] Tests: **88/88 passed** (28 new: full lifecycle history, every forbidden transition, reopen window, internal notes hidden, team queue scopes)
 - [x] Browser check (reporter): comment posted · no admin/staff panels · forged internal note refused
 - [ ] **You:** as Admin: Issues → Review queue → open ISS-000001 → assign. Then create a Support Staff user in that team, log in as them and use Team queue → Take → Start → Resolve
-- [ ] Commit M5
+- [x] Commit M5 (`06b8eb0`)
 
-## ⬜ M6 — Assets & maintenance ← NEXT
-- [ ] Asset types CRUD, asset CRUD (Admin)
-- [ ] Link issue → asset (same room), maintenance records, asset history page
-- [ ] Tests: unique tag, same-room rule
+## ✅ M6 — Assets & maintenance
+- [x] Asset types: add / edit / deactivate / search (Admin, Manage → Asset types)
+- [x] Asset registry: list with search + type / building / status filters; **staff and admins can view**, only **admins add/edit** (StaffOrAdmin on the controller + AdminOnly on Create/Edit)
+- [x] Asset form: unique tag (saved uppercase), type, Building → Room (shared `wwwroot/js/room-picker.js`), serial no., status, purchase/warranty dates (warranty can't end before purchase), notes
+- [x] Asset page: details, "Under warranty" badge, **maintenance history** with total cost, issues linked to this asset
+- [x] Link issue → asset on the issue page (team staff / admin): only assets **in the same room** are offered, and the server enforces it; the link is recorded in the timeline
+- [x] Maintenance records (staff / admin): type, work done, date & time (Bangladesh time → saved as UTC, not in the future), cost in BDT, optional related issue (must be linked to that asset), asset status after the work; saved together in one transaction
+- [x] Navbar: Admin → Manage → Assets / Asset types; Staff → Assets
+- [x] Tests: **106/106 passed** (18 new: unique tag, room/building mismatch, inactive type, warranty date, same-room link rule, who may link, maintenance saves + updates status, unlinked issue refused, future date refused, asset pages' policies)
+- [x] Browser check (student): issue form room picker still works · Assets / Asset types / Maintenance → Access denied · issue page shows "Asset: Not linked"
+- [ ] **You:** as Admin add an asset in D-Building room 301, then on ISS-000001 (once assigned) link it and log maintenance
+- [ ] Commit M6
 
-## ⬜ M7 — Dashboards
+## ⬜ M7 — Dashboards ← NEXT
 - [ ] Reporter, Support Staff and Admin dashboards
 
 ## ⬜ M8 — Search, filters & reports
@@ -131,3 +139,4 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | 2026-10-29 | M3 implemented: master data CRUD, user management, pagination, tests (42/42) |
 | 2026-10-29 | M4 implemented: issue reporting, lists, details, edit/cancel, resource-based authorization, tests (60/60) |
 | 2026-10-29 | M5 implemented: full workflow, review queue, team queue, comments with internal notes, tests (88/88) |
+| 2026-10-29 | M6 implemented: asset types, asset registry, issue→asset link (same room), maintenance records, tests (106/106) |

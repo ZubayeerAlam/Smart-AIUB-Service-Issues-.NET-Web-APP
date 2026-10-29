@@ -93,6 +93,10 @@ public static class IssuePermissions
     public static bool CanResolve(Issue issue, IssueActor actor) =>
         issue.Status == IssueStatus.InProgress && (actor.IsAdmin || IsAssignedStaff(issue, actor));
 
+    /// <summary>Choose which asset of the room the issue is about (staff of the team, or admin).</summary>
+    public static bool CanLinkAsset(Issue issue, IssueActor actor) =>
+        !issue.Status.IsFinal() && (actor.IsAdmin || IsTeamMember(issue, actor));
+
     // ---------- Comments ----------
 
     /// <summary>Anyone who can see the issue may comment until it is finished.</summary>

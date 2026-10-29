@@ -1,0 +1,112 @@
+@model AssetDetailsViewModel
+@{
+    ViewData["Title"] = Model.AssetTag;
+    var isAdmin = User.IsInRole(Roles.Admin);
+}
+
+<a asp-action="Index" class="sc-back">&larr; Assets</a>
+
+<div class="sc-issue-header">
+    <div>
+        <div class="text-muted small fw-semibold">@Model.TypeName</div>
+        <h1>@Model.AssetTag · @Model.Name</h1>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="sc-badge @Model.Status.BadgeClass()">@Model.Status.DisplayName()</span>
+            @if (Model.UnderWarranty)
+            {
+                <span class="sc-badge sc-badge-info">Under warranty</span>
+            }
+            <span class="text-muted small">@Model.BuildingName · @IssueDisplay.FloorName(Model.Floor) · Room @Model.RoomNumber</span>
+        </div>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a asp-controller="Maintenance" asp-action="Create" asp-route-assetId="@Model.Id" class="btn btn-primary">+ Log maintenance</a>
+        @if (isAdmin)
+        {
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary">Edit</a>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="sc-panel mb-4">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <h2 class="sc-panel-title">Maintenance history (@Model.Maintenance.Count)</h2>
+                @if (Model.TotalCost > 0)
+                {
+                    <span class="small text-muted">Total cost: <strong>@AssetDisplay.Money(Model.TotalCost)</strong></span>
+                }
+            </div>
+
+            @if (Model.Maintenance.Count == 0)
+            {
+                <p class="text-muted small mb-0">No maintenance recorded yet.</p>
+            }
+            else
+            {
+                <ol class="sc-timeline">
+                    @foreach (var m in Model.Maintenance)
+                    {
+                        <li>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <span class="sc-badge sc-badge-role">@m.Type</span>
+                                <span class="small text-muted">@m.PerformedAt.ToDisplay() · @m.PerformedByName</span>
+                                @if (m.Cost is not null)
+                                {
+                                    <span class="small fw-semibold">@AssetDisplay.Money(m.Cost.Value)</span>
+                                }
+                                @if (m.IssueId is not null)
+                                {
+                                    <a asp-controller="Issues" asp-action="Details" asp-route-id="@m.IssueId" class="small">@IssueDisplay.TicketNumber(m.IssueId.Value)</a>
+                                }
+                            </div>
+                            <div class="small mt-1 sc-pre">@m.Description</div>
+                        </li>
+                    }
+                </ol>
+            }
+        </div>
+
+        <div class="sc-panel">
+            <h2 class="sc-panel-title">Issues reported for this asset (@Model.Issues.Count)</h2>
+            @if (Model.Issues.Count == 0)
+            {
+                <p class="text-muted small mb-0">No issues are linked to this asset.</p>
+            }
+            else
+            {
+                <ul class="list-unstyled mb-0">
+                    @foreach (var i in Model.Issues)
+                    {
+                        <li class="d-flex flex-wrap gap-2 align-items-center py-1">
+                            <a asp-controller="Issues" asp-action="Details" asp-route-id="@i.Id" class="fw-semibold text-decoration-none">@i.TicketNumber</a>
+                            <span>@i.Title</span>
+                            <partial name="_StatusBadge" model="i.Status" />
+                            <span class="small text-muted">@i.CreatedAt.ToDisplayDate()</span>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="sc-panel">
+            <h2 class="sc-panel-title">Details</h2>
+            <dl class="sc-dl mb-0">
+                <dt>Serial number</dt>
+                <dd>@(Model.SerialNumber ?? "—")</dd>
+                <dt>Purchased</dt>
+                <dd>@(Model.PurchaseDate?.ToString("d MMM yyyy") ?? "—")</dd>
+                <dt>Warranty until</dt>
+                <dd>@(Model.WarrantyExpiry?.ToString("d MMM yyyy") ?? "—")</dd>
+                @if (Model.Notes is not null)
+                {
+                    <dt>Notes</dt>
+                    <dd class="sc-pre">@Model.Notes</dd>
+                }
+            </dl>
+        </div>
+    </div>
+</div>

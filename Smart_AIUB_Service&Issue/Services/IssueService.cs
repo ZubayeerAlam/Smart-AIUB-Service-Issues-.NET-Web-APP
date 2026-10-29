@@ -216,7 +216,9 @@ public class IssueService : IIssueService
                 CreatedAt = i.CreatedAt,
                 UpdatedAt = i.UpdatedAt,
                 ResolvedAt = i.ResolvedAt,
-                ReopenCount = i.ReopenCount
+                ReopenCount = i.ReopenCount,
+                AssetId = i.AssetId,
+                AssetLabel = i.Asset != null ? i.Asset.AssetTag + " · " + i.Asset.Name : null
             })
             .FirstAsync();
 
@@ -260,12 +262,81 @@ public class IssueService : IIssueService
         model.CanComment = IssuePermissions.CanComment(issue, actor);
         model.CanSeeInternal = canSeeInternal;
         model.ReopenUntil = issue.ResolvedAt?.AddDays(_options.ReopenWindowDays);
+        model.CanLinkAsset = IssuePermissions.CanLinkAsset(issue, actor);
+        model.CanSeeAssets = actor.IsAdmin || actor.IsStaff;
 
         if (model.CanAssign)
         {
             await FillAssignOptionsAsync(model, issue);
         }
+        if (model.CanLinkAsset)
+        {
+            model.RoomAssetOptions = await _db.Assets.AsNoTracking()
+                .Where(a => a.RoomId == issue.RoomId && (a.Status != AssetStatus.Retired || a.Id == issue.AssetId))
+                .OrderBy(a => a.AssetTag)
+                .Select(a => new SelectListItem(a.AssetTag + " · " + a.Name, a.Id.ToString(), a.Id == issue.AssetId))
+                .ToListAsync();
+        }
         return model;
+    }
+
+    // ---------- Asset link ----------
+
+    public async Task<ServiceResult> LinkAssetAsync(int issueId, int? assetId, IssueActor actor)
+    {
+        var issue = await _db.Issues.FirstOrDefaultAsync(i => i.Id == issueId);
+        if (issue is null)
+        {
+            return ServiceResult.Fail("Issue not found.");
+        }
+        if (!IssuePermissions.CanLinkAsset(issue, actor))
+        {
+            return ServiceResult.Fail("Only the assigned support team or an admin can link an asset to this issue.");
+        }
+
+        string note;
+        if (assetId is null)
+        {
+            note = "Asset link removed";
+        }
+        else
+        {
+            var asset = await _db.Assets.AsNoTracking().FirstOrDefaultAsync(a => a.Id == assetId);
+            if (asset is null)
+            {
+                return ServiceResult.Fail("Asset not found.");
+            }
+            // Business rule: the asset must be in the room where the problem was reported.
+            if (asset.RoomId != issue.RoomId)
+            {
+                return ServiceResult.Fail("The asset must be in the same room as the issue.");
+            }
+            note = $"Linked to asset {asset.AssetTag}";
+        }
+
+        issue.AssetId = assetId;
+        issue.UpdatedAt = DateTime.UtcNow;
+
+        // Recorded in the timeline (status unchanged) so everyone sees who linked what.
+        _db.IssueStatusHistory.Add(new IssueStatusHistory
+        {
+            IssueId = issue.Id,
+            FromStatus = issue.Status,
+            ToStatus = issue.Status,
+            ChangedById = actor.UserId,
+            ChangedAt = issue.UpdatedAt,
+            Note = note
+        });
+
+        try
+        {
+            await _db.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return ServiceResult.Fail("This issue was changed by someone else just now. Please reload and try again.");
+        }
+        return ServiceResult.Success();
     }
 
     private async Task FillAssignOptionsAsync(IssueDetailsViewModel model, Issue issue)

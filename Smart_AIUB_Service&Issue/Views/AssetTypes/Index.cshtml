@@ -1,0 +1,47 @@
+@model ListPageViewModel<AssetTypeListItem>
+@{
+    ViewData["Title"] = "Asset types";
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Asset types</h1>
+        <p>Kinds of equipment in the asset registry (projector, desktop PC, AC, ...).</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary">+ Add asset type</a>
+</div>
+
+<partial name="_ListFilter" model="Model" />
+
+<div class="sc-table-card">
+    @if (Model.Results.Items.Count == 0)
+    {
+        <div class="sc-empty">No asset types match your filter.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr><th>Name</th><th>Assets</th><th>Status</th><th class="text-end">Actions</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.Results.Items)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@t.Name</td>
+                            <td><a asp-controller="Assets" asp-action="Index" asp-route-typeId="@t.Id">@t.AssetCount assets</a></td>
+                            <td><partial name="_ActiveBadge" model="t.IsActive" /></td>
+                            <td class="text-end text-nowrap">
+                                <a asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <partial name="_ActiveToggle" model="new ActiveToggleModel(t.Id.ToString(), t.IsActive, t.Name)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<partial name="_Pagination" model="Model.Results" />

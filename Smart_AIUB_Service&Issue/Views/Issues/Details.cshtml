@@ -184,6 +184,28 @@
             </div>
         }
 
+        @if (Model.CanLinkAsset)
+        {
+            <div class="sc-panel mb-4">
+                <h2 class="sc-panel-title">Which equipment?</h2>
+                @if (!Model.RoomAssetOptions.Any())
+                {
+                    <p class="small text-muted mb-0">No assets are registered in this room.</p>
+                }
+                else
+                {
+                    <form asp-action="LinkAsset" asp-route-id="@Model.Id" method="post" class="d-flex gap-2">
+                        <label for="AssetId" class="visually-hidden">Asset</label>
+                        <select id="AssetId" name="AssetId" asp-items="Model.RoomAssetOptions" class="form-select">
+                            <option value="">-- No asset --</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline-primary">Save</button>
+                    </form>
+                    <div class="form-text">Only assets in this room are listed.</div>
+                }
+            </div>
+        }
+
         <div class="sc-panel">
             <h2 class="sc-panel-title">Details</h2>
             <dl class="sc-dl mb-0">
@@ -198,6 +220,25 @@
                 <dd>@(Model.TeamName ?? "Not assigned yet")</dd>
                 <dt>Technician</dt>
                 <dd>@(Model.StaffName ?? "—")</dd>
+                <dt>Asset</dt>
+                <dd>
+                    @if (Model.AssetId is null)
+                    {
+                        <span class="text-muted">Not linked</span>
+                    }
+                    else if (Model.CanSeeAssets)
+                    {
+                        <a asp-controller="Assets" asp-action="Details" asp-route-id="@Model.AssetId">@Model.AssetLabel</a>
+                        <div class="mt-1">
+                            <a asp-controller="Maintenance" asp-action="Create" asp-route-assetId="@Model.AssetId" asp-route-issueId="@Model.Id"
+                               class="btn btn-sm btn-outline-primary">+ Log maintenance</a>
+                        </div>
+                    }
+                    else
+                    {
+                        @Model.AssetLabel
+                    }
+                </dd>
                 @if (Model.ResolvedAt is not null)
                 {
                     <dt>Resolved</dt>

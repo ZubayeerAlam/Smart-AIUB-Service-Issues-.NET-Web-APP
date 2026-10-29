@@ -53,6 +53,7 @@
                             @if (User.IsInRole(Roles.SupportStaff))
                             {
                                 <li class="nav-item"><a class="nav-link fw-semibold" asp-controller="Issues" asp-action="Team" asp-route-scope="@TeamQueueScope.Mine">Team queue</a></li>
+                                <li class="nav-item"><a class="nav-link" asp-controller="Assets" asp-action="Index">Assets</a></li>
                             }
                             <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Report">Report issue</a></li>
                             <li class="nav-item"><a class="nav-link" asp-controller="Issues" asp-action="Index">My issues</a></li>
@@ -68,11 +69,13 @@
                                     <li><h6 class="dropdown-header">Campus</h6></li>
                                     <li><a class="dropdown-item" asp-controller="Buildings" asp-action="Index">Buildings</a></li>
                                     <li><a class="dropdown-item" asp-controller="Rooms" asp-action="Index">Rooms</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Assets" asp-action="Index">Assets</a></li>
                                     <li><hr class="dropdown-divider" /></li>
                                     <li><h6 class="dropdown-header">Lookups</h6></li>
                                     <li><a class="dropdown-item" asp-controller="Departments" asp-action="Index">Departments</a></li>
                                     <li><a class="dropdown-item" asp-controller="IssueCategories" asp-action="Index">Issue categories</a></li>
                                     <li><a class="dropdown-item" asp-controller="SupportTeams" asp-action="Index">Support teams</a></li>
+                                    <li><a class="dropdown-item" asp-controller="AssetTypes" asp-action="Index">Asset types</a></li>
                                 </ul>
                             </li>
                         }

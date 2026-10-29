@@ -159,6 +159,8 @@ public class IssueDetailsViewModel
     public DateTime UpdatedAt { get; set; }
     public DateTime? ResolvedAt { get; set; }
     public int ReopenCount { get; set; }
+    public int? AssetId { get; set; }
+    public string? AssetLabel { get; set; }
     public List<IssueHistoryItem> History { get; set; } = [];
     public List<IssueCommentItem> Comments { get; set; } = [];
 
@@ -177,6 +179,13 @@ public class IssueDetailsViewModel
     public bool CanReopen { get; set; }
     public bool CanComment { get; set; }
     public bool CanSeeInternal { get; set; }
+    public bool CanLinkAsset { get; set; }
+
+    /// <summary>Staff/admin may open the asset page and log maintenance.</summary>
+    public bool CanSeeAssets { get; set; }
+
+    /// <summary>Assets in the issue's room (filled only when CanLinkAsset).</summary>
+    public IEnumerable<SelectListItem> RoomAssetOptions { get; set; } = [];
 
     /// <summary>Last moment the reporter may reopen (UTC), when the issue is Resolved.</summary>
     public DateTime? ReopenUntil { get; set; }

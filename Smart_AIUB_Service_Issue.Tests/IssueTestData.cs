@@ -23,6 +23,7 @@ public sealed class IssueTestData : IAsyncDisposable
     public Room D301 { get; private set; } = null!;
     public Room C101 { get; private set; } = null!;
     public IssueCategory Projector { get; private set; } = null!;
+    public AssetType ProjectorType { get; private set; } = null!;
     public SupportTeam ItTeam { get; private set; } = null!;
     public SupportTeam ElectricalTeam { get; private set; } = null!;
     public ApplicationUser Reporter { get; private set; } = null!;
@@ -45,6 +46,9 @@ public sealed class IssueTestData : IAsyncDisposable
             s.AddScoped<IIssueActorService, IssueActorService>();
             s.AddScoped<IIssueService, IssueService>();
             s.AddScoped<IIssueWorkflowService, IssueWorkflowService>();
+            s.AddScoped<IAssetTypeService, AssetTypeService>();
+            s.AddScoped<IAssetService, AssetService>();
+            s.AddScoped<IMaintenanceService, MaintenanceService>();
         });
 
         var data = new IssueTestData(services);
@@ -63,7 +67,8 @@ public sealed class IssueTestData : IAsyncDisposable
         ItTeam = new SupportTeam { Name = "IT Support" };
         ElectricalTeam = new SupportTeam { Name = "Electrical" };
         Projector = new IssueCategory { Name = "Projector", DefaultSupportTeam = ItTeam };
-        db.AddRange(D, C, D301, C101, ItTeam, ElectricalTeam, Projector);
+        ProjectorType = new AssetType { Name = "Projector" };
+        db.AddRange(D, C, D301, C101, ItTeam, ElectricalTeam, Projector, ProjectorType);
         await db.SaveChangesAsync();
 
         Reporter = await CreateUserAsync("reporter@test.com", Roles.Student);
@@ -112,7 +117,24 @@ public sealed class IssueTestData : IAsyncDisposable
         return result.Value;
     }
 
-    /// <summary>Test shortcut: put an issue in a state directly (the workflow comes in M5).</summary>
+    public ViewModels.Assets.AssetFormViewModel AssetForm(string tag, Room? room = null) => new()
+    {
+        AssetTag = tag,
+        Name = "Test projector",
+        AssetTypeId = ProjectorType.Id,
+        BuildingId = (room ?? D301).BuildingId,
+        RoomId = (room ?? D301).Id
+    };
+
+    /// <summary>Creates an asset through the service and returns its id.</summary>
+    public async Task<int> CreateAssetAsync(string tag, Room? room = null)
+    {
+        var result = await Services.Get<IAssetService>().SaveAsync(AssetForm(tag, room));
+        Assert.True(result.Succeeded, result.Error);
+        return result.Value;
+    }
+
+    /// <summary>Test shortcut: put an issue in a state directly, skipping the workflow.</summary>
     public async Task SetStateAsync(int issueId, Models.Enums.IssueStatus status, SupportTeam? team = null)
     {
         var db = Services.Get<ApplicationDbContext>();
