@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Smart_AIUB_Service_Issue.Models.Enums;
 using Smart_AIUB_Service_Issue.Services.Interfaces;
 using Smart_AIUB_Service_Issue.ViewModels.Issues;
 
@@ -33,19 +32,13 @@ public class IssueReviewController : AdminControllerBase
         return View(model);
     }
 
-    /// <summary>Every issue, with filters.</summary>
-    public async Task<IActionResult> All(string? search, IssueStatus? status, IssuePriority? priority, int? teamId, int page = 1)
+    /// <summary>Every issue, with all filters (status, priority, team, category, building, date range).</summary>
+    public async Task<IActionResult> All([FromQuery] IssueListFilter filter, int page = 1)
     {
-        var model = new IssueListViewModel
-        {
-            Search = search,
-            Status = status,
-            Priority = priority,
-            TeamId = teamId,
-            TeamOptions = await _teams.GetOptionsAsync(teamId),
-            Results = await _issues.GetAllIssuesAsync(
-                new IssueListFilter { Search = search, Status = status, Priority = priority, TeamId = teamId }, page)
-        };
+        var model = IssueListViewModel.FromFilter(filter);
+        model.Results = await _issues.GetAllIssuesAsync(filter, page);
+        model.TeamOptions = await _teams.GetOptionsAsync(filter.TeamId);
+        await _issues.FillListOptionsAsync(model);
         return View(model);
     }
 

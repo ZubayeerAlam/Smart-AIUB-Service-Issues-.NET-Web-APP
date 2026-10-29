@@ -28,10 +28,13 @@ public interface IIssueService
 
     // Lists
     /// <summary>Issues reported by <paramref name="userId"/>.</summary>
-    Task<PagedResult<IssueListItem>> GetMyIssuesAsync(string userId, string? search, IssueStatus? status, int page);
+    Task<PagedResult<IssueListItem>> GetMyIssuesAsync(string userId, IssueListFilter filter, int page);
 
     /// <summary>Everyone's issues that are still open. No reporter names.</summary>
-    Task<PagedResult<IssueListItem>> GetOpenIssuesAsync(string? search, IssueStatus? status, int page);
+    Task<PagedResult<IssueListItem>> GetOpenIssuesAsync(IssueListFilter filter, int page);
+
+    /// <summary>Category and building dropdowns for the list filters.</summary>
+    Task FillListOptionsAsync(IssueListViewModel model);
 
     /// <summary>Admin: Submitted issues waiting for review, oldest first.</summary>
     Task<PagedResult<IssueListItem>> GetReviewQueueAsync(string? search, int page);

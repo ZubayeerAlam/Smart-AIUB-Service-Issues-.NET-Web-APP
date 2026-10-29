@@ -8,11 +8,14 @@
         <h1>All issues</h1>
         <p>Every reported issue, newest first.</p>
     </div>
-    <a asp-action="Index" class="btn btn-primary">Review queue</a>
+    <div class="d-flex gap-2">
+        <a asp-controller="Reports" asp-action="Index" class="btn btn-light">Reports</a>
+        <a asp-action="Index" class="btn btn-primary">Review queue</a>
+    </div>
 </div>
 
 <form method="get" class="sc-filter row g-2 align-items-end">
-    <div class="col-12 col-lg">
+    <div class="col-12 col-lg-4">
         <label for="search" class="form-label">Search</label>
         <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Title, room, building or ticket no." />
     </div>
@@ -36,16 +39,38 @@
             }
         </select>
     </div>
-    <div class="col-12 col-md-4 col-lg-2">
+    <div class="col-12 col-md-4 col-lg-4">
         <label asp-for="TeamId" class="form-label">Team</label>
         <select asp-for="TeamId" asp-items="Model.TeamOptions" class="form-select">
             <option value="">All teams</option>
         </select>
     </div>
-    <div class="col-12 col-lg-auto d-flex gap-2">
+
+    <div class="col-6 col-md-3 col-lg-2">
+        <label asp-for="CategoryId" class="form-label">Category</label>
+        <select asp-for="CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+            <option value="">All</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <label asp-for="BuildingId" class="form-label">Building</label>
+        <select asp-for="BuildingId" asp-items="Model.BuildingOptions" class="form-select">
+            <option value="">All</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <label asp-for="From" class="form-label">Reported from</label>
+        <input asp-for="From" type="date" class="form-control" />
+    </div>
+    <div class="col-6 col-md-3 col-lg-2">
+        <label asp-for="To" class="form-label">Reported to</label>
+        <input asp-for="To" type="date" class="form-control" />
+    </div>
+    <div class="col-12 col-lg d-flex gap-2">
         <button type="submit" class="btn btn-primary flex-fill">Filter</button>
         <a asp-action="All" class="btn btn-light flex-fill">Reset</a>
     </div>
 </form>
+<p class="form-text mt-n2 mb-3">Dates are Bangladesh dates and include the whole day.</p>
 
 <partial name="_IssueTable" model="Model.Results" />

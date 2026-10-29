@@ -14,9 +14,9 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | M4 — Issue reporting | ✅ (committed `ab06373`) |
 | M5 — Review, workflow, history, comments | ✅ (committed `06b8eb0`; your Admin/Staff browser check open) |
 | M6 — Assets & maintenance | ✅ (committed `e8d9ff1`) |
-| M7 — Dashboards | ✅ (not committed yet) |
-| M8 — Search, filters & reports | ⬜ **← NEXT** |
-| M9 — Hardening & docs | ⬜ |
+| M7 — Dashboards | ✅ (committed `b5f1a36`) |
+| M8 — Search, filters & reports | ✅ (not committed yet) |
+| M9 — Hardening & docs | ⬜ **← NEXT** |
 
 ---
 
@@ -125,14 +125,21 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 - [x] Tests: **109/109 passed** (3 new: reporter sees only own counts, staff sees own team only, admin counts and groups)
 - [x] Browser check (student): `/` → dashboard with correct numbers · tile link opens filtered list · phone layout 2×2 tiles, no sideways scroll
 - [ ] **You:** open the dashboard as Admin and as Support Staff
-- [ ] Commit M7
+- [x] Commit M7 (`b5f1a36`)
 
-## ⬜ M8 — Search, filters & reports ← NEXT
-- [ ] Filters on all lists
-- [ ] Date-range reports: issues, resolution time, maintenance cost
-- [ ] Tests: date boundaries (UTC ↔ Asia/Dhaka)
+## ✅ M8 — Search, filters & reports
+- [x] One shared `IssueListFilter` (search, status, priority, team, category, building, date from/to) bound from the URL with `[FromQuery]`, used by every issue list
+- [x] My issues / Open issues: search, status, **category, building**; filter-aware "no results" text
+- [x] Admin All issues: search, status, priority, team, category, building, **reported from / to**
+- [x] Every other list already had filters: master data (search + status), users (search + role + status), rooms (+ building), assets (type, building, status), team queue (scope, status, priority)
+- [x] `DhakaTime.ToUtcRange`: inclusive Bangladesh dates → UTC window `[start, end)` (1 Oct–31 Oct = 30 Sep 18:00 UTC → 31 Oct 18:00 UTC)
+- [x] **Reports** (Admin → Issues → Reports): date range + quick ranges (Last 30 days, This month, Last month, This year); issues reported (by status, category, building, team); resolution time (average, median, by priority, by category); maintenance (count, total cost, by type, by asset type, most expensive assets); Print button with print-friendly CSS
+- [x] Tests: **124/124 passed** (15 new: Dhaka ↔ UTC conversions, 18:00 UTC = next Dhaka day, month and single-day edges in reports and the All issues filter, building/category filters, average/median resolution time, maintenance totals, reversed range)
+- [x] Browser check (student): new filters work and keep their selection · empty-filter message · Reports → Access denied
+- [ ] **You:** as Admin open Issues → Reports and try the quick ranges and Print
+- [ ] Commit M8
 
-## ⬜ M9 — Hardening & docs
+## ⬜ M9 — Hardening & docs ← NEXT
 - [ ] Error pages, logging review, security checklist (IDOR, CSRF, over-posting)
 - [ ] README: setup, User Secrets, migrations, screenshots
 - [ ] Full test run
@@ -150,3 +157,4 @@ Full plan: [Release1-Plan.md](Release1-Plan.md)
 | 2026-10-29 | M5 implemented: full workflow, review queue, team queue, comments with internal notes, tests (88/88) |
 | 2026-10-29 | M6 implemented: asset types, asset registry, issue→asset link (same room), maintenance records, tests (106/106) |
 | 2026-10-29 | M7 implemented: reporter, support staff and admin dashboards, tests (109/109) |
+| 2026-10-29 | M8 implemented: shared issue filters, date-range reports, Dhaka date boundaries, tests (124/124) |

@@ -1,0 +1,143 @@
+@model ReportViewModel
+@{
+    ViewData["Title"] = "Reports";
+    var today = DhakaTime.TodayInDhaka();
+    var monthStart = new DateOnly(today.Year, today.Month, 1);
+    string Range(DateOnly from, DateOnly to) => Url.Action("Index", new { from = from.ToString("yyyy-MM-dd"), to = to.ToString("yyyy-MM-dd") })!;
+    string AllIssues(object values) => Url.Action("All", "IssueReview", values)!;
+    var fromText = Model.From.ToString("yyyy-MM-dd");
+    var toText = Model.To.ToString("yyyy-MM-dd");
+}
+
+<div class="sc-page-header">
+    <div>
+        <h1>Reports</h1>
+        <p>@Model.From.ToString("d MMM yyyy") – @Model.To.ToString("d MMM yyyy") · @Model.Days day@(Model.Days == 1 ? "" : "s") · Bangladesh dates, both included</p>
+    </div>
+    <button type="button" class="btn btn-light d-print-none" onclick="window.print()">Print</button>
+</div>
+
+<form method="get" class="sc-filter row g-2 align-items-end d-print-none">
+    <div class="col-6 col-md-3">
+        <label for="from" class="form-label">From</label>
+        <input id="from" name="from" type="date" value="@fromText" class="form-control" required />
+    </div>
+    <div class="col-6 col-md-3">
+        <label for="to" class="form-label">To</label>
+        <input id="to" name="to" type="date" value="@toText" class="form-control" required />
+    </div>
+    <div class="col-12 col-md-auto">
+        <button type="submit" class="btn btn-primary w-100">Show report</button>
+    </div>
+    <div class="col-12 col-md d-flex flex-wrap gap-2 justify-content-md-end">
+        <a href="@Range(today.AddDays(-29), today)" class="btn btn-sm btn-light">Last 30 days</a>
+        <a href="@Range(monthStart, today)" class="btn btn-sm btn-light">This month</a>
+        <a href="@Range(monthStart.AddMonths(-1), monthStart.AddDays(-1))" class="btn btn-sm btn-light">Last month</a>
+        <a href="@Range(new DateOnly(today.Year, 1, 1), today)" class="btn btn-sm btn-light">This year</a>
+    </div>
+</form>
+
+@* ---------- Summary ---------- *@
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <a href="@AllIssues(new { from = fromText, to = toText })" class="sc-tile sc-tile-blue sc-tile-link">
+            <div class="sc-tile-value">@Model.IssuesReported</div>
+            <div class="sc-tile-label">Issues reported</div>
+            <div class="sc-tile-hint">Click to see them all</div>
+        </a>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="sc-tile sc-tile-green">
+            <div class="sc-tile-value">@Model.ResolvedCount</div>
+            <div class="sc-tile-label">Issues resolved</div>
+            <div class="sc-tile-hint">
+                Average @ReportViewModel.Duration(Model.AverageHours) · median @ReportViewModel.Duration(Model.MedianHours)
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="sc-tile sc-tile-amber">
+            <div class="sc-tile-value">@AssetDisplay.Money(Model.MaintenanceCost)</div>
+            <div class="sc-tile-label">Maintenance cost</div>
+            <div class="sc-tile-hint">@Model.MaintenanceCount record@(Model.MaintenanceCount == 1 ? "" : "s")</div>
+        </div>
+    </div>
+</div>
+
+@* ---------- Issues reported ---------- *@
+<h2 class="sc-section-title h5 mb-3">Issues reported</h2>
+<div class="row g-4 mb-4">
+    <div class="col-md-6 col-xl-3"><partial name="~/Views/Dashboard/_BarList.cshtml" model="Model.ByStatus" /></div>
+    <div class="col-md-6 col-xl-3"><partial name="~/Views/Dashboard/_BarList.cshtml" model="Model.ByCategory" /></div>
+    <div class="col-md-6 col-xl-3"><partial name="~/Views/Dashboard/_BarList.cshtml" model="Model.ByBuilding" /></div>
+    <div class="col-md-6 col-xl-3"><partial name="~/Views/Dashboard/_BarList.cshtml" model="Model.ByTeam" /></div>
+</div>
+
+@* ---------- Resolution time ---------- *@
+<h2 class="sc-section-title h5 mb-3">Resolution time <span class="text-muted fw-normal small">(from reported to resolved)</span></h2>
+<div class="row g-4 mb-4">
+    <div class="col-lg-6">
+        <div class="sc-table-card">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Priority</th><th class="text-end">Resolved</th><th class="text-end">Average time</th></tr></thead>
+                <tbody>
+                    @if (Model.ResolutionByPriority.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-muted text-center py-4">No issues were resolved in this period.</td></tr>
+                    }
+                    @foreach (var r in Model.ResolutionByPriority)
+                    {
+                        <tr><td>@r.Label</td><td class="text-end">@r.Count</td><td class="text-end">@ReportViewModel.Duration(r.AverageHours)</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="sc-table-card">
+            <table class="table align-middle mb-0">
+                <thead><tr><th>Category (slowest first)</th><th class="text-end">Resolved</th><th class="text-end">Average time</th></tr></thead>
+                <tbody>
+                    @if (Model.ResolutionByCategory.Count == 0)
+                    {
+                        <tr><td colspan="3" class="text-muted text-center py-4">No issues were resolved in this period.</td></tr>
+                    }
+                    @foreach (var r in Model.ResolutionByCategory)
+                    {
+                        <tr><td>@r.Label</td><td class="text-end">@r.Count</td><td class="text-end">@ReportViewModel.Duration(r.AverageHours)</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* ---------- Maintenance cost ---------- *@
+<h2 class="sc-section-title h5 mb-3">Maintenance cost</h2>
+<div class="row g-4">
+    @foreach (var (title, rows) in new[]
+    {
+        ("By maintenance type", Model.CostByMaintenanceType),
+        ("By asset type", Model.CostByAssetType),
+        ("Most expensive assets", Model.TopAssetsByCost)
+    })
+    {
+        <div class="col-lg-4">
+            <div class="sc-table-card h-100">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>@title</th><th class="text-end">Records</th><th class="text-end">Cost</th></tr></thead>
+                    <tbody>
+                        @if (rows.Count == 0)
+                        {
+                            <tr><td colspan="3" class="text-muted text-center py-4">No maintenance in this period.</td></tr>
+                        }
+                        @foreach (var r in rows)
+                        {
+                            <tr><td>@r.Label</td><td class="text-end">@r.Count</td><td class="text-end text-nowrap">@AssetDisplay.Money(r.Cost)</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

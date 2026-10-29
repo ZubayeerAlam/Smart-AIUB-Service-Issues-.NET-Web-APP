@@ -148,7 +148,7 @@ public class IssueServiceTests
         await data.ReportAsync();
         await data.Services.Get<IIssueService>().ReportAsync(data.ValidForm(), data.OtherReporter.Id);
 
-        var mine = await data.Services.Get<IIssueService>().GetMyIssuesAsync(data.Reporter.Id, null, null, 1);
+        var mine = await data.Services.Get<IIssueService>().GetMyIssuesAsync(data.Reporter.Id, new IssueListFilter(), 1);
 
         Assert.Single(mine.Items);
     }
@@ -163,7 +163,7 @@ public class IssueServiceTests
         await data.SetStateAsync(closed, IssueStatus.Closed);
         await data.SetStateAsync(cancelled, IssueStatus.Cancelled);
 
-        var list = await data.Services.Get<IIssueService>().GetOpenIssuesAsync(null, null, 1);
+        var list = await data.Services.Get<IIssueService>().GetOpenIssuesAsync(new IssueListFilter(), 1);
 
         var item = Assert.Single(list.Items);
         Assert.Equal(open, item.Id);
@@ -178,7 +178,7 @@ public class IssueServiceTests
         await data.ReportAsync();
 
         var found = await data.Services.Get<IIssueService>()
-            .GetMyIssuesAsync(data.Reporter.Id, $"ISS-{id:000000}", null, 1);
+            .GetMyIssuesAsync(data.Reporter.Id, new IssueListFilter { Search = $"ISS-{id:000000}" }, 1);
 
         Assert.Equal(id, Assert.Single(found.Items).Id);
     }

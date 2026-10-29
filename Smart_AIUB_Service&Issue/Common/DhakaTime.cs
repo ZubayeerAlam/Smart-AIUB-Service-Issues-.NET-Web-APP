@@ -21,6 +21,21 @@ public static class DhakaTime
     public static DateTime FromDhakaToUtc(DateTime dhakaLocal) =>
         TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(dhakaLocal, DateTimeKind.Unspecified), Zone);
 
+    /// <summary>Today's date in Bangladesh (which can differ from the UTC date between 18:00 and 24:00 UTC).</summary>
+    public static DateOnly TodayInDhaka() => DateOnly.FromDateTime(DateTime.UtcNow.ToDhaka());
+
+    /// <summary>
+    /// Turns an inclusive Bangladesh date range ("1 Oct to 31 Oct") into a UTC range for queries:
+    ///   start = 1 Oct 00:00 Dhaka (= 30 Sep 18:00 UTC), end = 1 Nov 00:00 Dhaka (exclusive).
+    /// Use it as  utc >= start &amp;&amp; utc &lt; end. Either side may be open (null).
+    /// </summary>
+    public static (DateTime? StartUtc, DateTime? EndUtcExclusive) ToUtcRange(DateOnly? from, DateOnly? to)
+    {
+        DateTime? start = from is null ? null : FromDhakaToUtc(from.Value.ToDateTime(TimeOnly.MinValue));
+        DateTime? end = to is null ? null : FromDhakaToUtc(to.Value.AddDays(1).ToDateTime(TimeOnly.MinValue));
+        return (start, end);
+    }
+
     /// <summary>Current Bangladesh time, rounded to the minute (for form defaults).</summary>
     public static DateTime NowInDhaka()
     {

@@ -41,27 +41,24 @@ public class IssuesController : Controller
 
     // ---------- Lists ----------
 
+    // [FromQuery] IssueListFilter: ASP.NET Core fills the object from the URL
+    // (?search=...&status=...&buildingId=...&from=2026-10-01), one property per query value.
+
     /// <summary>My issues.</summary>
-    public async Task<IActionResult> Index(string? search, IssueStatus? status, int page = 1)
+    public async Task<IActionResult> Index([FromQuery] IssueListFilter filter, int page = 1)
     {
-        var model = new IssueListViewModel
-        {
-            Search = search,
-            Status = status,
-            Results = await _issues.GetMyIssuesAsync(_userManager.GetUserId(User)!, search, status, page)
-        };
+        var model = IssueListViewModel.FromFilter(filter);
+        model.Results = await _issues.GetMyIssuesAsync(_userManager.GetUserId(User)!, filter, page);
+        await _issues.FillListOptionsAsync(model);
         return View(model);
     }
 
     /// <summary>Everyone's open issues (to avoid duplicate reports). No reporter names.</summary>
-    public async Task<IActionResult> Open(string? search, IssueStatus? status, int page = 1)
+    public async Task<IActionResult> Open([FromQuery] IssueListFilter filter, int page = 1)
     {
-        var model = new IssueListViewModel
-        {
-            Search = search,
-            Status = status,
-            Results = await _issues.GetOpenIssuesAsync(search, status, page)
-        };
+        var model = IssueListViewModel.FromFilter(filter);
+        model.Results = await _issues.GetOpenIssuesAsync(filter, page);
+        await _issues.FillListOptionsAsync(model);
         return View(model);
     }
 

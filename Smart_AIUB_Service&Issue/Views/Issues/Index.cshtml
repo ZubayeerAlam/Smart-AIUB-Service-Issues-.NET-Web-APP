@@ -1,7 +1,7 @@
 @model IssueListViewModel
 @{
     ViewData["Title"] = "My issues";
-    ViewData["EmptyText"] = "You haven't reported any issues yet.";
+    ViewData["EmptyText"] = Model.HasFilter ? "No issues match your filter." : "You haven't reported any issues yet.";
 }
 
 <div class="sc-page-header">

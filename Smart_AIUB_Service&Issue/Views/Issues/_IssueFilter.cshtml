@@ -6,11 +6,11 @@
         : Enum.GetValues<IssueStatus>();
 }
 <form method="get" class="sc-filter row g-2 align-items-end">
-    <div class="col-12 col-md">
+    <div class="col-12 col-lg">
         <label for="search" class="form-label">Search</label>
         <input id="search" name="search" value="@Model.Search" class="form-control" placeholder="Title, room, building or ticket no." />
     </div>
-    <div class="col-12 col-md-3">
+    <div class="col-6 col-md-4 col-lg-2">
         <label for="status" class="form-label">Status</label>
         <select id="status" name="status" class="form-select">
             <option value="">All statuses</option>
@@ -20,7 +20,19 @@
             }
         </select>
     </div>
-    <div class="col-12 col-md-auto d-flex gap-2">
+    <div class="col-6 col-md-4 col-lg-2">
+        <label asp-for="CategoryId" class="form-label">Category</label>
+        <select asp-for="CategoryId" asp-items="Model.CategoryOptions" class="form-select">
+            <option value="">All</option>
+        </select>
+    </div>
+    <div class="col-12 col-md-4 col-lg-2">
+        <label asp-for="BuildingId" class="form-label">Building</label>
+        <select asp-for="BuildingId" asp-items="Model.BuildingOptions" class="form-select">
+            <option value="">All</option>
+        </select>
+    </div>
+    <div class="col-12 col-lg-auto d-flex gap-2">
         <button type="submit" class="btn btn-primary flex-fill">Filter</button>
         <a href="@Context.Request.Path" class="btn btn-light flex-fill">Reset</a>
     </div>

@@ -146,14 +146,26 @@ public class IssueService : IIssueService
 
     // ---------- Lists ----------
 
-    public Task<PagedResult<IssueListItem>> GetMyIssuesAsync(string userId, string? search, IssueStatus? status, int page) =>
-        ToListItems(Filter(_db.Issues.Where(i => i.ReporterId == userId), new IssueListFilter { Search = search, Status = status }),
-                staffView: false)
+    public Task<PagedResult<IssueListItem>> GetMyIssuesAsync(string userId, IssueListFilter filter, int page) =>
+        ToListItems(Filter(_db.Issues.Where(i => i.ReporterId == userId), filter), staffView: false)
             .ToPagedResultAsync(page);
 
-    public Task<PagedResult<IssueListItem>> GetOpenIssuesAsync(string? search, IssueStatus? status, int page) =>
-        ToListItems(Filter(OpenIssues(), new IssueListFilter { Search = search, Status = status }), staffView: false)
+    public Task<PagedResult<IssueListItem>> GetOpenIssuesAsync(IssueListFilter filter, int page) =>
+        ToListItems(Filter(OpenIssues(), filter), staffView: false)
             .ToPagedResultAsync(page);
+
+    public async Task FillListOptionsAsync(IssueListViewModel model)
+    {
+        // Filters list every category/building (also inactive ones, so old issues stay findable).
+        model.CategoryOptions = await _db.IssueCategories.AsNoTracking()
+            .OrderBy(c => c.Name)
+            .Select(c => new SelectListItem(c.Name, c.Id.ToString()))
+            .ToListAsync();
+        model.BuildingOptions = await _db.Buildings.AsNoTracking()
+            .OrderBy(b => b.Name)
+            .Select(b => new SelectListItem(b.Name, b.Id.ToString()))
+            .ToListAsync();
+    }
 
     public Task<PagedResult<IssueListItem>> GetReviewQueueAsync(string? search, int page) =>
         ToListItems(Filter(_db.Issues.Where(i => i.Status == IssueStatus.Submitted), new IssueListFilter { Search = search }),
@@ -451,6 +463,25 @@ public class IssueService : IIssueService
         if (filter.TeamId is not null)
         {
             query = query.Where(i => i.AssignedTeamId == filter.TeamId);
+        }
+        if (filter.CategoryId is not null)
+        {
+            query = query.Where(i => i.CategoryId == filter.CategoryId);
+        }
+        if (filter.BuildingId is not null)
+        {
+            query = query.Where(i => i.Room.BuildingId == filter.BuildingId);
+        }
+
+        // Dates are typed in Bangladesh time; the database stores UTC.
+        var (startUtc, endUtc) = DhakaTime.ToUtcRange(filter.From, filter.To);
+        if (startUtc is not null)
+        {
+            query = query.Where(i => i.CreatedAt >= startUtc);
+        }
+        if (endUtc is not null)
+        {
+            query = query.Where(i => i.CreatedAt < endUtc);
         }
 
         if (!string.IsNullOrWhiteSpace(filter.Search))

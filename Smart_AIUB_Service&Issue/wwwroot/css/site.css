@@ -823,3 +823,26 @@ body {
 .sc-mini-list li:hover {
   background: #f7f9fd;
 }
+
+/* ---------- Reports & printing (M8) ---------- */
+
+/* Printing a report: no navbar/footer/buttons, plain white page */
+@media print {
+  .sc-navbar,
+  .sc-footer,
+  .sc-alert,
+  .d-print-none {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .sc-panel,
+  .sc-table-card,
+  .sc-tile {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+}

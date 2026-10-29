@@ -50,6 +50,7 @@ public sealed class IssueTestData : IAsyncDisposable
             s.AddScoped<IAssetService, AssetService>();
             s.AddScoped<IMaintenanceService, MaintenanceService>();
             s.AddScoped<IDashboardService, DashboardService>();
+            s.AddScoped<IReportService, ReportService>();
         });
 
         var data = new IssueTestData(services);

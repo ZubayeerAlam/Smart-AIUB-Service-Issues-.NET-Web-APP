@@ -75,6 +75,19 @@ public class IssueListFilter
     public IssueStatus? Status { get; set; }
     public IssuePriority? Priority { get; set; }
     public int? TeamId { get; set; }
+    public int? CategoryId { get; set; }
+    public int? BuildingId { get; set; }
+
+    /// <summary>Reported on or after this Bangladesh date.</summary>
+    public DateOnly? From { get; set; }
+
+    /// <summary>Reported on or before this Bangladesh date (the whole day counts).</summary>
+    public DateOnly? To { get; set; }
+
+    /// <summary>True when the user has narrowed the list (used to pick the right "empty" message).</summary>
+    public bool HasFilter =>
+        !string.IsNullOrWhiteSpace(Search) || Status is not null || Priority is not null || TeamId is not null ||
+        CategoryId is not null || BuildingId is not null || From is not null || To is not null;
 }
 
 public class IssueListViewModel : IssueListFilter
@@ -83,6 +96,21 @@ public class IssueListViewModel : IssueListFilter
 
     /// <summary>Team dropdown on the admin "All issues" list.</summary>
     public IEnumerable<SelectListItem> TeamOptions { get; set; } = [];
+    public IEnumerable<SelectListItem> CategoryOptions { get; set; } = [];
+    public IEnumerable<SelectListItem> BuildingOptions { get; set; } = [];
+
+    /// <summary>Copies the posted filter values into a new view model.</summary>
+    public static IssueListViewModel FromFilter(IssueListFilter filter) => new()
+    {
+        Search = filter.Search,
+        Status = filter.Status,
+        Priority = filter.Priority,
+        TeamId = filter.TeamId,
+        CategoryId = filter.CategoryId,
+        BuildingId = filter.BuildingId,
+        From = filter.From,
+        To = filter.To
+    };
 
     /// <summary>Staff team queue: "mine", "unassigned" or "" (whole team).</summary>
     public string? Scope { get; set; }

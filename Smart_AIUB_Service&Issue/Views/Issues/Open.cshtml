@@ -1,7 +1,7 @@
 @model IssueListViewModel
 @{
     ViewData["Title"] = "Open issues";
-    ViewData["EmptyText"] = "No open issues right now. 🎉";
+    ViewData["EmptyText"] = Model.HasFilter ? "No open issues match your filter." : "No open issues right now. 🎉";
     ViewData["OpenOnly"] = true;
     ViewData["LinkToDetails"] = false; // other people's issues: summary only
 }
